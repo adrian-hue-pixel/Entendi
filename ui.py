@@ -153,9 +153,18 @@ footer{visibility:hidden;}
 .pagehead h1{font-size:clamp(1.5rem,3vw,2.05rem);margin:.1rem 0 0;font-weight:800;letter-spacing:-.03em;padding:0;line-height:1.1;animation:blurIn .8s .15s both;}
 .pagehead p{margin:.3rem 0 0;color:var(--muted);font-size:1rem;line-height:1.45;max-width:34rem;animation:riseIn .8s .3s both;}
 .mwrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
-[class*="st-key-owl_message_"]{position:relative;background:var(--card);border-color:var(--border)!important;border-radius:18px;overflow:visible;}
-[class*="st-key-owl_message_"]::before{content:"";position:absolute;top:-7px;right:3rem;width:12px;height:12px;
+.stApp [class*="st-key-owl_message_"]{position:relative;width:min(100%,31rem);padding:.62rem .88rem;
+  gap:.45rem;background:var(--card);border:1px solid var(--border)!important;border-radius:15px;}
+.stApp .st-key-owl_message_home{margin:.25rem auto .5rem;}
+.st-key-owl_message_home::before{content:"";position:absolute;top:-6px;left:calc(50% - 5px);width:10px;height:10px;
   transform:rotate(45deg);background:var(--pop);border-top:1px solid var(--border);border-left:1px solid var(--border);pointer-events:none;}
+[class*="st-key-owl_message_"] [data-testid="stHorizontalBlock"]{display:grid;grid-template-columns:minmax(0,1fr) auto;
+  gap:.65rem;align-items:center;}
+[class*="st-key-owl_message_"] [data-testid="stColumn"]{width:auto!important;min-width:0!important;}
+.stApp [class*="st-key-owl_message_"] button{padding:.3rem .65rem;min-height:2rem;
+  background:var(--accent-soft);border-color:transparent;white-space:nowrap;}
+[class*="st-key-owl_message_"] button [data-testid="stMarkdownContainer"] p{font-size:.81rem;}
+.stApp .owl-language{display:block;margin-bottom:.12rem;font-size:.72rem;font-weight:650;color:var(--muted);}
 /* First-run welcome and the country picker. */
 .welcome-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;text-align:center;pointer-events:none;
   background:radial-gradient(ellipse at 50% 44%,var(--accent-soft),transparent 57%),var(--bg);

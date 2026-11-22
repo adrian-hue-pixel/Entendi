@@ -53,23 +53,26 @@ def _fixed_audio(language: str, phrase: str) -> tuple[bytes, str]:
 
 def owl_message(phrase: str, area: str) -> None:
     local = st.session_state.get("interface_language", "English")
+    languages = ("English",) if local == "English" else ("English", local)
     with st.container(border=True, key=f"owl_message_{area}"):
-        for index, language in enumerate(("English", local)):
-            text_column, audio_column = st.columns([4, 1.2], vertical_alignment="center")
+        for language in languages:
+            text_column, audio_column = st.columns([3, 1], gap="small", vertical_alignment="center")
             with text_column:
-                markup(f'<p class="owl-line"><strong>{ui.esc(LOCAL_NAMES[language])}:</strong> '
-                       f'{ui.esc(translate(phrase, language))}</p>')
+                label = (f'<small class="owl-language">{ui.esc(LOCAL_NAMES[language])}</small>'
+                         if len(languages) > 1 else "")
+                markup(f'{label}<p class="owl-line">{ui.esc(translate(phrase, language))}</p>')
             with audio_column:
-                if st.button(translate("Listen", language), key=f"owl_listen_{area}_{index}",
+                audio_key = f"owl_listen_{area}_{language}"
+                if st.button(translate("Listen", language), key=audio_key, icon=":material/volume_up:",
                              help=LOCAL_NAMES[language]):
                     try:
                         audio, mime = _fixed_audio(language, phrase)
                     except LetterError as exc:
                         st.error(tr(str(exc)))
                     else:
-                        st.session_state["owl_audio"] = (area, index, audio, mime)
+                        st.session_state["owl_audio"] = (area, language, audio, mime)
                         st.session_state[f"owl_play_{area}"] = True
-        if (audio := st.session_state.get("owl_audio")) and audio[0] == area:
+        if (audio := st.session_state.get("owl_audio")) and audio[0] == area and audio[1] in languages:
             st.audio(audio[2], format=audio[3], autoplay=bool(st.session_state.pop(f"owl_play_{area}", False)))
 
 
