@@ -4,11 +4,12 @@ from datetime import date, datetime, timedelta, timezone
 import json
 from uuid import uuid4
 
-from letter_reader import Notice
+from letter_reader import LANGUAGES, Notice
+from country_profiles import COUNTRIES
 from trust import redact
 
 RECORD_FIELDS = {"id", "category", "title", "details", "date", "done"}
-PROFILE_FIELDS = {"age", "country", "education"}
+PROFILE_FIELDS = {"country", "nation", "interface_language", "explanation_language"}
 
 
 def new_data() -> dict:
@@ -27,6 +28,14 @@ def read_data(raw: bytes) -> dict:
         raise ValueError("Invalid answers.")
     result = new_data()
     result["profile"] = {key: value for key, value in profile.items() if key in PROFILE_FIELDS and len(value) < 100}
+    choices = result["profile"]
+    if choices.get("country") == "England (United Kingdom)":
+        choices.update(country="United Kingdom", nation="England")
+    if choices.get("country") not in COUNTRIES:
+        choices.pop("country", None)
+    for field in ("interface_language", "explanation_language"):
+        if choices.get(field) not in LANGUAGES:
+            choices.pop(field, None)
     ids = set()
     for record in data["records"]:
         if (not isinstance(record, dict) or set(record) != RECORD_FIELDS

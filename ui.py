@@ -153,6 +153,10 @@ footer{visibility:hidden;}
 .pagehead h1{font-size:clamp(1.5rem,3vw,2.05rem);margin:.1rem 0 0;font-weight:800;letter-spacing:-.03em;padding:0;line-height:1.1;animation:blurIn .8s .15s both;}
 .pagehead p{margin:.3rem 0 0;color:var(--muted);font-size:1rem;line-height:1.45;max-width:34rem;animation:riseIn .8s .3s both;}
 .mwrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+[class*="st-key-owl_message_"]{position:relative;background:var(--card);border-color:var(--border)!important;border-radius:18px;overflow:visible;}
+[class*="st-key-owl_message_"]::before{content:"";position:absolute;top:-7px;right:3rem;width:12px;height:12px;
+  transform:rotate(45deg);background:var(--pop);border-top:1px solid var(--border);border-left:1px solid var(--border);pointer-events:none;}
+.owl-line{font-size:.93rem;margin:0;}
 .bubble{position:relative;max-width:210px;text-align:center;padding:.5rem .9rem;margin-bottom:.6rem;border-radius:14px;background:var(--card2);border:1px solid var(--border);font-size:.8rem;color:var(--muted);box-shadow:0 1px 2px rgba(41,27,79,.05);animation:pop .7s .6s cubic-bezier(.34,1.56,.64,1) both;}
 .bubble::after{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-5px;width:9px;height:9px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}
 /* ---------- mascot ---------- */
@@ -379,24 +383,24 @@ def mascot(size: int = 120) -> str:
             f'<i class="owl-shadow"></i><i class="owl-body"></i>{sparks}</span>')
 
 
-def hero_html() -> str:
-    return _min(f'''<div class="hero"><div class="mwrap"><div class="halo"></div>
-<div class="bubble">Welcome to Entendi.</div>{mascot(120)}</div>
+def hero_html(headline: str = "Understand any official letter,", alternate: str = "in your language.",
+              description: str = "See what the letter is about, what to do next, and when it’s due.") -> str:
+    return _min(f'''<div class="hero"><div class="mwrap"><div class="halo"></div>{mascot(120)}</div>
 <span class="eyebrow">Entendi</span>
-<h1 class="hero-title">Understand any official letter,<br><span class="gt">in your language.</span></h1>
-<p>See what the letter is about, what to do next, and when it’s due.</p></div>''')
+<h1 class="hero-title">{esc(headline)}<br><span class="gt">{esc(alternate)}</span></h1>
+<p>{esc(description)}</p></div>''')
 
 
-def page_header(page: str, title: str, tagline: str, bubble: str) -> str:
+def page_header(page: str, title: str, tagline: str) -> str:
     return _min(f'''<div class="pagehead"><div class="ptitle"><div class="ptile">{icon(page)}</div><div><span class="eyebrow">Entendi</span>
-<h1>{esc(title)}</h1><p>{esc(tagline)}</p></div></div><div class="mwrap"><div class="bubble">{esc(bubble)}</div>{mascot(72)}</div></div>''')
+<h1>{esc(title)}</h1><p>{esc(tagline)}</p></div></div><div class="mwrap">{mascot(72)}</div></div>''')
 
 
-def steps_html() -> str:
+def steps_html(translate=lambda value: value) -> str:
     steps = (("Photo", "Upload a letter or take a clear photo."),
              ("Read", "Get a plain-language explanation and see the original wording."),
              ("Act", "Follow the checklist and add important dates to your calendar."))
-    cards = "".join(f"<div class='step'><i>STEP {n}</i><b>{title}</b><span>{detail}</span></div>"
+    cards = "".join(f"<div class='step'><i>{n:02}</i><b>{esc(translate(title))}</b><span>{esc(translate(detail))}</span></div>"
                     for n, (title, detail) in enumerate(steps, 1))
     return _min(f'<div class="steps">{cards}</div>')
 

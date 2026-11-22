@@ -5,6 +5,8 @@ from decimal import Decimal, InvalidOperation
 import re
 import unicodedata
 
+from country_profiles import region
+
 _FULLWIDTH = str.maketrans("０１２３４５６７８９／．，＄￥", "0123456789/.,$¥")
 _MONTHS = {}
 for index, names in enumerate((
@@ -137,10 +139,12 @@ _ISSUE = re.compile(
 )
 
 
-def check_deadline(source: str, evidence: str, proposed: date | None) -> str:
+def check_deadline(source: str, evidence: str, proposed: date | None, *, country: str = "") -> str:
     if _ISSUE.search(evidence):
         return "mismatch" if proposed else "missing"
     found, ambiguous = dates(evidence, context=source)
+    if country and region(country).order != "DMY" and re.search(r"\b[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4}\b", normalize(evidence)):
+        return "ambiguous"  # Dotted notation conflicts with the selected regional convention.
     if ambiguous:
         return "ambiguous"
     if not proposed:
@@ -168,12 +172,50 @@ _PII = re.compile(
 )
 
 
-def redact(text: str) -> str:
+_COUNTRY_PII = {
+    "United Kingdom": r"(?P<id>\b[A-Z]{2}[ \t]?[0-9]{2}[ \t]?[0-9]{2}[ \t]?[0-9]{2}[ \t]?[A-D]\b)",
+    "Japan": r"(?:My Number|個人番号|マイナンバー)[ \t:：]*(?P<id>[0-9]{4}[ -]?[0-9]{4}[ -]?[0-9]{4})\b",
+    "Spain": r"\b(?P<id>(?:[0-9]{8}|[XYZ][0-9]{7})[ -]?[A-Z])\b",
+}
+_PHONE = {
+    "United Kingdom": r"\b(?P<id>0[0-9]{4}[ \t][0-9]{6})\b",
+    "Japan": r"\b(?P<id>0[0-9]{1,3}-[0-9]{2,4}-[0-9]{4})\b",
+    "France": r"\b(?P<id>0[1-9](?:[ .-][0-9]{2}){4})\b",
+}
+_BANK = {
+    "United Kingdom": r"sort[ -]code[ \t:#]*(?P<id>[0-9]{2}-[0-9]{2}-[0-9]{2})\b",
+    "Japan": r"(?:口座番号|account number)[ \t:：]*(?P<id>[0-9]{7})\b",
+}
+
+
+def display_amount(text: str, country: str) -> str:
+    """Localize separator style without converting or guessing the currency."""
+    rules = region(country)
+    matches = amounts(text)
+    if not rules.decimal or len(matches) != 1:
+        return text
+    currency, amount = next(iter(matches))
+    if currency != rules.currency:
+        return text
+    symbol = {"EUR": "€", "GBP": "£", "USD": "$", "JPY": "¥", "CNY": "¥", "KRW": "₩", "PLN": "zł"}.get(currency, currency + " ")
+    digits = f"{amount:,.0f}" if currency in {"JPY", "KRW"} and amount == amount.to_integral_value() else f"{amount:,.2f}"
+    if rules.decimal == ",":
+        return digits.translate(str.maketrans({",": "\u202f", ".": ","})) + " " + symbol.strip()
+    return symbol + digits
+
+
+def redact(text: str, *, country: str = "") -> str:
     def mask(value: str) -> str:
         significant = [index for index, char in enumerate(value) if char.isalnum()]
         end = set(significant[-4:])
         return "".join(char if index in end or not char.isalnum() else "•" for index, char in enumerate(value))
 
+    for patterns in (_COUNTRY_PII, _PHONE, _BANK):
+        if pattern := patterns.get(country):
+            normalized = text.translate(_FULLWIDTH)
+            for match in reversed(list(re.finditer(pattern, normalized, re.IGNORECASE))):
+                start, end = match.span("id")
+                text = text[:start] + mask(normalized[start:end]) + text[end:]
     normalized = text.translate(_FULLWIDTH)
     replacements = list(_PII.finditer(normalized))
     for match in reversed(replacements):

@@ -6,6 +6,20 @@ Entendi turns a photo of an official letter into a plain-language explanation in
 
 Open [Entendi](https://entendi.streamlit.app/) and choose **Try a sample letter**. Three fictional examples are available on **Understand a Letter**. They work without an API key and cover a payment deadline, an appointment confirmation and an unreadable deadline.
 
+## Country and language
+
+On the first visit, select a country and an interface language. The picker includes Europe and Asia, the named countries elsewhere, and an Other option. Countries with several supported languages prompt for a choice. The selectable explanation languages use their own names. Edit preferences from the sidebar, or use **My data** to take the profile and saved letters to another session. No email, login, account database or cloud profile is required.
+
+Country settings are hints for document formats and issuer vocabulary. The app never guesses a deadline from an ambiguous date. Local date display and decimal formatting preserve the original currency. Country-specific masking supplements the generic privacy rules, with local patterns supported selectively. Benefits are available for **England**, selected within the United Kingdom. App labels and common messages are static catalogues in `locales/`. English is used for entries that lack a translation, including some secondary captions.
+
+## Owl voice and translation maintenance
+
+The owl uses fixed public phrases only. It displays an English line and an interface-language line, each with its own Listen button. The six benchmark locales have an in-project meaning check recorded in the JSON files. The other locales are marked machine translated. Independent native-speaker review is welcome.
+
+The deploy checks for pre-generated clips under `assets/owl_audio/`, otherwise prepares them in the background and shares the per-language cache. The voice comes from gTTS when reachable, with offline speech as a fallback. Personal letter audio stays on the offline speech path.
+
+With network access, `python -m owl_audio --language English --language Japanese` produces MP3 files to include with a release. Running without `--language` generates all clips. The file names depend on the translated wording so revised lines will get fresh audio. The checked-in strings can be regenerated once with `python -m translate_owl --language Japanese` using `GEMINI_LOCALE_API_KEY` and `GEMINI_LOCALE_MODEL`. Review any regenerated wording before shipping. Gemini is not a runtime translation dependency.
+
 ## Run locally
 
 Requires Python 3.11 or later.
