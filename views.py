@@ -1,84 +1,36 @@
-"""Workspace pages and their shared display and data helpers."""
-import csv
-from datetime import date
-from io import StringIO
+"""Entendi's six Streamlit pages."""
+
+from datetime import date, datetime
 import json
+import os
+from urllib.parse import quote
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import streamlit as st
 
+import benefits
+import letter_data as data
+from letter_reader import LANGUAGES, SAMPLES, LetterError, Notice, explain_letter, prepare_image, sample_letter
 import ui
 
 PAGES = {
     "home": ("Home", ""),
-    "dashboard": ("My Dashboard", "See what is open and what is coming up."),
-    "workspace": ("My Workspace", "Set up your profile, add items, and export your work."),
-    "updates": ("Updates & Alerts", "See recent changes and record an update."),
-    "review": ("File Review", "Attach a file and record what you want to review."),
-    "ask": ("Voice Notes", "Record your voice or type a note."),
-    "calendar": ("Calendar", "Plan your tasks and see when they are due."),
-    "compare": ("Compare Items", "Put the options side by side."),
-    "journal": ("Journal", "Keep a dated record of your work."),
-    "plan": ("Planning", "Capture a goal, its scope, and the next steps."),
-    "resources": ("Resources", "Keep track of references and supporting material."),
-    "workflow": ("Workflows", "Write down a process you want to repeat."),
-    "issue": ("Issue Reports", "Describe a problem and record what you observed."),
-    "guides": ("Guides & Offline", "Export your records and find saved notes."),
-    "lab": ("Comparison Lab", "Place two drafts side by side and record your observations."),
-    "about": ("About & Feedback", "Learn how the workspace works and leave feedback."),
+    "understand": ("Understand a Letter", "Read an official letter in the language you choose."),
+    "letters": ("My Letters", "Open saved explanations and see what still needs your attention."),
+    "deadlines": ("Deadlines", "See what is due and add a reminder to your phone."),
+    "benefits": ("Benefits Check", "Check the basic rules for selected central schemes in India."),
+    "help": ("Help & About", "How Entendi works, privacy, and feedback."),
 }
-TOOLS = ("updates", "review", "ask", "calendar", "plan", "compare", "journal", "resources", "workflow")
-FORMS = {
-    "plan": (("Goal *", None), ("Category", ("Personal", "Study", "Project")), ("Owner", None),
-             ("Priority", ("Normal", "High", "Low")), ("Time frame", ("This week", "This month", "Later")),
-             ("Status", ("Planned", "In progress", "Done")), ("Next steps", "long")),
-    "resources": (("Resource title *", None), ("Category", ("Reference", "Tool", "Document")), ("Source", None),
-                  ("Format", ("Link", "File", "Other")), ("Link or location", None), ("Notes", "long")),
-    "workflow": (("Workflow title *", None), ("Category", ("Personal", "Study", "Project")),
-                 ("Used for", ("One-time", "Weekly", "As needed")), ("Owner", None), ("Steps", "long")),
-    "issue": (("Issue title *", None), ("Area", None), ("Context", None), ("What happened?", "long"),
-              ("Affected areas", ["Interface", "Data", "Workflow"]), ("Priority", ("Normal", "High", "Low"))),
-    "manual": (("Update title *", None), ("Category", ("General", "Milestone", "Alert")), ("Related item", None),
-               ("Status", ("Open", "In progress", "Done")), ("Source", None), ("Details", "long")),
+FEATURES = {
+    "understand": "Upload or photograph a letter and see what it asks you to do.",
+    "deadlines": "Keep due dates together and add them to your phone calendar.",
+    "benefits": "See which of three Indian government schemes you may qualify for.",
 }
-RECORD_FIELDS = {"id", "category", "title", "details", "date", "done"}
 
 
-def new_workspace() -> dict:
-    return {"profile": {}, "records": []}
-
-
-def read_workspace(raw: bytes) -> dict:
-    data = json.loads(raw)
-    if not isinstance(data, dict) or not isinstance(data.get("profile"), dict) or not isinstance(data.get("records"), list):
-        raise ValueError("Invalid workspace")
-    profile = data["profile"]
-    if any(not isinstance(key, str) or not isinstance(value, str) for key, value in profile.items()):
-        raise ValueError("Invalid profile")
-    ids = set()
-    for record in data["records"]:
-        if (not isinstance(record, dict) or set(record) != RECORD_FIELDS
-                or any(not isinstance(record[key], str) for key in RECORD_FIELDS - {"done"})
-                or not isinstance(record["done"], bool) or not record["id"] or record["id"] in ids):
-            raise ValueError("Invalid record")
-        date.fromisoformat(record["date"])
-        ids.add(record["id"])
-    return data
-
-
-def records(category=None) -> list:
-    items = st.session_state.workspace["records"]
-    return items if category is None else [item for item in items if item["category"] == category]
-
-
-def save(category: str, title: str, details: str = "", due: date | None = None) -> bool:
-    if not title.strip():
-        st.error("Enter a title.")
-        return False
-    records().insert(0, {"id": uuid4().hex, "category": category, "title": title.strip(),
-                         "details": details.strip(), "date": (due or date.today()).isoformat(), "done": False})
-    st.success("Saved to your workspace.")
-    return True
+def today() -> date:
+    return datetime.now(ZoneInfo("Asia/Kolkata")).date()
 
 
 def go(page: str) -> None:
@@ -89,390 +41,485 @@ def markup(html: str) -> None:
     st.markdown(html, unsafe_allow_html=True)
 
 
-def heading(title: str) -> None:
-    markup(ui.heading(title))
+def page_header(page: str) -> None:
+    title, tagline = PAGES[page]
+    markup(ui.page_header(page, title, tagline, title))
 
 
-def empty(title: str, detail: str) -> None:
-    markup(ui.empty_html(title, detail))
+def saved_entries(category: str | None = None) -> list[dict]:
+    entries = st.session_state.entendi_data["records"]
+    return entries if category is None else [entry for entry in entries if entry["category"] == category]
 
 
-def header(page: str) -> None:
-    title, subtitle = PAGES[page]
-    markup(ui.page_header(page, title, subtitle, "Your workspace" if page == "dashboard" else title))
+def find_entry(entry_id: str) -> dict | None:
+    return next((entry for entry in saved_entries() if entry["id"] == entry_id), None)
 
 
-def card_grid(prefix: str, tools=TOOLS) -> None:
-    for offset in range(0, len(tools), 3):
-        for col, page in zip(st.columns(3, gap="medium"), tools[offset:offset + 3]):
-            with col, st.container(key=f"fcard_{prefix}{page}"):
-                markup(ui.feature_card_html(page, *PAGES[page]))
-                st.button("Open  ›", key=f"open_{prefix}{page}", on_click=go, args=(page,))
+def start_letter(sample: str | None = None) -> None:
+    state = st.session_state
+    state.pop("current_letter", None)
+    state.pop("letter_error", None)
+    state["input_version"] = state.get("input_version", 0) + 1
+    if sample:
+        state["reading_job"] = {"sample": sample, "sample_day": today(), "id": uuid4().hex,
+                                "language": state.language}
+    go("understand")
 
 
 def home() -> None:
     markup(ui.hero_html())
-    _, dashboard_button, setup_button, _ = st.columns([2, 1.2, 1.2, 2])
-    dashboard_button.button("Open my dashboard", on_click=go, args=("dashboard",), type="primary")
-    setup_button.button("Set up my workspace", on_click=go, args=("workspace",))
+    left, right = st.columns(2, gap="small")
+    left.button("Upload a letter", on_click=start_letter, type="primary", width="stretch")
+    right.button("Try a sample letter", on_click=start_letter, args=("water",), width="stretch")
+    st.caption("Your photo isn't stored. Entendi explains; it doesn't give legal advice.")
+    upcoming = [(due, entry) for entry in saved_entries("letter")
+                if not entry["done"] and (due := data.deadline_for(entry)) and due >= today()]
+    if upcoming:
+        due, entry = min(upcoming, key=lambda pair: pair[0])
+        markup(ui.callout_html(f"Next deadline: {due:%d %b %Y} · {entry['title']}"))
     markup(ui.steps_html())
-    heading("Workspace tools")
-    card_grid("h_")
+    for column, (page, tagline) in zip(st.columns(3, gap="medium"), FEATURES.items()):
+        with column, st.container(key=f"fcard_home_{page}"):
+            markup(ui.feature_card_html(page, PAGES[page][0], tagline))
+            st.button("Open ›", key=f"home_{page}", on_click=go, args=(page,))
 
 
-def record_rows(items: list, limit: int = 6) -> None:
-    for item in items[:limit]:
-        markup(ui.record_html(item["title"], item["date"], item["category"].title()))
+def _service_options() -> dict:
+    config = {}
+    for name, field in (("LETTER_API_URL", "endpoint"), ("LETTER_API_MODEL", "model"), ("LETTER_API_KEY", "api_key")):
+        try:
+            value = st.secrets.get(name, "")
+        except (FileNotFoundError, st.errors.StreamlitSecretNotFoundError):
+            value = ""
+        config[field] = str(os.getenv(name) or value).strip()
+    return config
 
 
-def finish_task(task_id: str, widget_key: str) -> None:
-    for item in records("task"):
-        if item["id"] == task_id:
-            item["done"] = st.session_state[widget_key]
-            return
-
-
-def task_list(items: list, prefix: str) -> None:
-    for item in items:
-        key = f"{prefix}_{item['id']}"
-        st.checkbox(f"{item['date']} · {item['title']}", value=item["done"], key=key,
-                    on_change=finish_task, args=(item["id"], key))
-
-
-def dashboard() -> None:
-    header("dashboard")
-    today = date.today().isoformat()
-    pending = sorted((item for item in records("task") if not item["done"]), key=lambda item: item["date"])
-    recent = [item for item in records() if item["category"] not in {"task", "item", "feedback"}]
-    counts = ((len(records("item")), "Active items"),
-              (sum(item["date"] <= today for item in pending), "Tasks due now"), (len(recent), "Saved records"))
-    for index, (col, (count, label)) in enumerate(zip(st.columns(3, gap="medium"), counts), 1):
-        with col:
-            markup(ui.stat_html(count, label, delay=index / 10))
-    heading("Updates")
-    if records("update"):
-        record_rows(records("update"), 2)
-    else:
-        empty("No updates yet", "Updates you record will appear here.")
-    st.button("Open updates", on_click=go, args=("updates",))
-    heading("My items")
-    if not records("item"):
-        empty("No items yet", "Add your first item to the workspace.")
-        st.button("Add an item", on_click=go, args=("workspace",))
-    for item in records("item"):
-        markup(ui.progress_html(item["title"], "Active", 0, item["details"]))
-    heading("Coming up")
-    if not pending:
-        empty("Nothing due", "Add a task to put it on your calendar.")
-        st.button("Open calendar", on_click=go, args=("calendar",))
-    task_list(pending[:6], "dashboard")
-    heading("Recent records")
-    if not recent:
-        empty("No records yet", "Use a tool to save your first record.")
-    record_rows(recent, 3)
-    heading("Quick tools")
-    card_grid("d_", TOOLS[:3])
-
-
-def workspace() -> None:
-    header("workspace")
-    profile = st.session_state.workspace["profile"]
-    overview, details, items, export = st.tabs(["1. Overview", "2. My profile", "3. My items", "4. Keep my data"])
-    with overview:
-        st.markdown("Give your workspace a name so you can identify it later.")
-        with st.form("workspace_name"):
-            name = st.text_input("Workspace name", value=profile.get("Workspace name", ""))
-            if st.form_submit_button("Save workspace", type="primary"):
-                profile["Workspace name"] = name.strip()
-                st.success("Workspace updated.")
-    with details, st.form("profile"):
-        fields = {"Display name": st.text_input("Display name", value=profile.get("Display name", ""))}
-        for pair in (("Country", "Region"), ("Role", "Organization"), ("Time zone", "Website")):
-            for column, label in zip(st.columns(2), pair):
-                fields[label] = column.text_input(label, value=profile.get(label, ""))
-        if st.form_submit_button("Save profile", type="primary"):
-            profile.update(fields)
-            st.success("Profile saved.")
-    with items:
-        st.markdown("Add the items you want to keep in view.")
-        with st.form("item", clear_on_submit=True):
-            left, right = st.columns(2)
-            title = left.text_input("Item name *")
-            created = right.date_input("Start date")
-            left, right = st.columns(2)
-            category = left.text_input("Category")
-            priority = right.number_input("Priority", min_value=1, max_value=5, value=3)
-            if st.form_submit_button("Add item", type="primary"):
-                save("item", title, f"{category or 'General'} · Priority {priority}", created)
-        if not records("item"):
-            empty("No items yet", "Add your first item above.")
-        for item in records("item"):
-            markup(ui.progress_html(item["title"], "Active", 0, item["details"]))
-    with export:
-        st.markdown("Export your workspace to save a copy. You can import it from the sidebar.")
-        st.download_button("Download workspace file", json.dumps(st.session_state.workspace, indent=2),
-                           file_name="entendi_workspace.json", mime="application/json")
-        st.caption("The file includes your profile and saved records.")
-        st.divider()
-        clear = st.checkbox("Clear everything saved in this session")
-        if st.button("Clear workspace data", disabled=not clear):
-            st.session_state.workspace = new_workspace()
-            st.rerun()
-
-
-def feature_form(page: str) -> None:
-    left, right = st.columns([1.8, 1], gap="large")
-    with right, st.container(key=f"aside_{page}"):
-        markup(ui.aside_html())
-    with left, st.form(f"form_{page}"):
-        values = {}
-        for label, kind in FORMS[page]:
-            if kind == "long":
-                values[label] = st.text_area(label, height=100)
-            elif isinstance(kind, tuple):
-                values[label] = st.selectbox(label, kind)
-            elif isinstance(kind, list):
-                values[label] = ", ".join(st.multiselect(label, kind))
+def _run_reading() -> None:
+    state = st.session_state
+    job = state.pop("reading_job")
+    previous = state.get("current_letter", {})
+    with st.container(key="letter_loading"):
+        markup(f'<div class="letter-loading">{ui.mascot(88)}<strong>Reading your letter...</strong></div>')
+        try:
+            photo = job.get("photo") or previous.get("photo")
+            if sample := job.get("sample"):
+                notice, photo = sample_letter(sample, job["language"], today=job["sample_day"],
+                                              simpler=job.get("simpler", False))
             else:
-                values[label] = st.text_input(label)
-        if st.form_submit_button("Save record", type="primary"):
-            title = values.pop(next(iter(values)))
-            save("update" if page == "manual" else page, title,
-                 "\n".join(f"{label}: {value}" for label, value in values.items() if value))
-
-
-def updates() -> None:
-    header("updates")
-    items = records("update")
-    if items:
-        latest = items[0]
-        markup(f'<div class="wx-hero"><div class="wx-place">Latest update</div>'
-               f'<div class="wx-temp">{ui.esc(latest["title"])}</div>'
-               f'<div class="wx-desc">{ui.esc(latest["date"])}</div></div>')
-        heading("Recent updates")
-        record_rows(items)
-    else:
-        empty("No updates yet", "Add an update to see it here and on your dashboard.")
-    with st.expander("Record an update manually", expanded=not items):
-        feature_form("manual")
-
-
-def review() -> None:
-    header("review")
-    markup(ui.badge_html("1 · Add a file for review", "sky"))
-    with st.form("review_intake"):
-        title = st.text_input("Review title *")
-        focus = st.multiselect("What should be checked?", ["Content", "Structure", "Presentation", "Other"])
-        note = st.text_area("Review notes", height=90)
-        upload = st.file_uploader("File (optional)", type=["pdf", "txt", "png", "jpg", "jpeg", "webp"])
-        st.caption("The record saves the filename and your notes.")
-        status = st.selectbox("Status", ("Pending", "Reviewed"))
-        if st.form_submit_button("Save review", type="primary"):
-            filename = f" · {upload.name}" if upload else ""
-            save("review", title, f"{status}{filename}\n{', '.join(focus)}\n{note}")
-    record_rows(records("review"))
-
-
-def voice_notes() -> None:
-    header("ask")
-    audio = st.audio_input("Tap to record, tap again to stop")
-    if audio:
-        st.audio(audio.getvalue(), format=audio.type)
-    st.caption("Playback is available during this session. You can save a written note below.")
-    note = st.text_area("Your note", height=110)
-    if st.button("Save note", type="primary"):
-        save("note", note.splitlines()[0][:70] if note.strip() else "", note)
-    record_rows(records("note"))
-
-
-def calendar() -> None:
-    header("calendar")
-    heading("My schedule")
-    if not records("task"):
-        empty("No dates yet", "Add a task below.")
-    with st.expander("Add a task or schedule a reminder", expanded=not records("task")):
-        with st.form("calendar_form", clear_on_submit=True):
-            title = st.text_input("Task name *")
-            related = st.selectbox("Related item", ["General"] + [item["title"] for item in records("item")])
-            left, right = st.columns(2)
-            due = left.date_input("Due date")
-            priority = right.selectbox("Priority", ("Normal", "High", "Low"))
-            if st.form_submit_button("Add to calendar", type="primary"):
-                save("task", title, f"{related} · {priority}", due)
-    heading("My tasks")
-    today = date.today().isoformat()
-    tasks = sorted(records("task"), key=lambda item: item["date"])
-    if not tasks:
-        empty("No tasks yet", "Add a task to choose what happens next.")
-    for label, subset in (
-        ("Overdue", [item for item in tasks if not item["done"] and item["date"] < today]),
-        ("Today and upcoming", [item for item in tasks if not item["done"] and item["date"] >= today]),
-    ):
-        if subset:
-            markup(ui.group_heading(label))
-            task_list(subset, "calendar")
-    finished = [item for item in tasks if item["done"]]
-    if finished:
-        with st.expander(f"Finished tasks ({len(finished)})"):
-            task_list(finished, "calendar")
-    with st.expander("Add my own task"):
-        with st.form("quick_task", clear_on_submit=True):
-            title = st.text_input("What needs to be done? *")
-            left, right = st.columns(2)
-            when = left.date_input("Due date")
-            note = right.text_input("Note")
-            if st.form_submit_button("Add task") and save("task", title, note, when):
-                st.rerun()
-
-
-def compare() -> None:
-    header("compare")
-    references, mine, table = st.tabs(["References", "My items", "Compare items"])
-    with references, st.form("comparison_reference"):
-        left, right = st.columns(2)
-        title = left.text_input("Reference name *")
-        link = right.text_input("Link or reference")
-        if st.form_submit_button("Save reference", type="primary"):
-            save("reference", title, link)
-        record_rows(records("reference"))
-    with mine:
-        with st.form("comparison_item", clear_on_submit=True):
-            left, right = st.columns(2)
-            title = left.text_input("Item name *")
-            context = right.text_input("Category")
-            left, center, right = st.columns(3)
-            rating = left.number_input("Rating", min_value=0, max_value=10, value=0)
-            date_added = center.date_input("Date")
-            note = right.text_input("Note")
-            if st.form_submit_button("Save item", type="primary"):
-                save("comparison", title, f"{context} · Rating {rating} · {note}", date_added)
-        if not records("comparison"):
-            empty("No items saved", "Enter the items you want to compare.")
-        record_rows(records("comparison"))
-    with table:
-        st.markdown("Enter the details for each option.")
-        draft = st.data_editor([{"Item": "", "Score": 0, "Notes": ""} for _ in range(3)],
-                               num_rows="dynamic", key="comparison_table", hide_index=True)
-        items = [item for item in draft if item["Item"]]
-        if items:
-            st.dataframe(items, hide_index=True)
+                notice = explain_letter(
+                    language=job["language"], **_service_options(),
+                    photo=job.get("photo"), transcription=job.get("transcription", ""),
+                    simpler=job.get("simpler", False),
+                )
+        except LetterError as exc:
+            state["letter_error"] = str(exc)
         else:
-            st.caption("Enter an item to see it in the table.")
-    with st.expander("Saved comparison references"):
-        record_rows(records("reference"))
+            state["current_letter"] = {
+                "id": job["id"], "notice": notice, "photo": photo, "sample": job.get("sample"),
+                "sample_day": job.get("sample_day"),
+            }
+            state["language_update"] = notice.language
+    st.rerun()
 
 
-def journal() -> None:
-    header("journal")
-    with st.expander("Add a journal entry", expanded=not records("journal")):
-        with st.form("journal", clear_on_submit=True):
-            left, center, right = st.columns(3)
-            entered = left.date_input("Date")
-            category = center.selectbox("Type", ("Note", "Milestone", "Reflection"))
-            title = right.text_input("Title *")
-            note = st.text_area("Notes", height=90, max_chars=600)
-            context = st.text_input("Context (optional)")
-            left, center, right = st.columns(3)
-            topic = left.text_input("Topic")
-            time_spent = center.number_input("Minutes", min_value=0, value=0)
-            mood = right.selectbox("Priority", ("Normal", "High", "Low"))
-            upload = st.file_uploader("Attachment (optional)", type=["txt", "jpg", "png", "pdf"])
-            if st.form_submit_button("Save entry", type="primary"):
-                attached = f" · {upload.name}" if upload else ""
-                save("journal", title, f"{category} · {context} · {topic} · {time_spent} min · {mood}{attached}\n{note}", entered)
-    heading("My journal")
-    items = records("journal")
-    query = st.selectbox("Show", ["All entries"] + sorted({item["title"] for item in items}))
-    if not items:
-        empty("Nothing here yet", "Add a journal entry above.")
-    for item in items:
-        if query in ("All entries", item["title"]):
-            entered = date.fromisoformat(item["date"])
-            markup(ui.journal_item_html(str(entered.day), entered.strftime("%b %Y"), "Entry",
-                                       item["title"], item["details"], ""))
-    if items:
-        buffer = StringIO()
-        writer = csv.writer(buffer)
-        writer.writerow(("Date", "Title", "Details"))
-        for item in items:
-            cells = (item["date"], item["title"], item["details"])
-            writer.writerow(["'" + cell if cell.lstrip().startswith(("=", "+", "-", "@")) else cell for cell in cells])
-        st.download_button("Download journal (CSV)", buffer.getvalue(), file_name="entendi_journal.csv", mime="text/csv")
+def _sync_input_language() -> None:
+    st.session_state.language = st.session_state.letter_input_language
 
 
-def guides() -> None:
-    header("guides")
-    heading("Take Entendi with you")
-    st.markdown("Download a text copy of your saved records to read offline.")
-    lines = [f"{item['date']} · {item['title']}\n{item['details']}" for item in records()]
-    st.download_button("Download offline copy", "\n\n".join(lines), file_name="entendi_notes.txt")
-    st.caption(f"{len(lines)} saved records.")
-    heading("Key guides")
-    for title, text in (
-        ("Set up your workspace", "Open My Workspace to add a name and your first item."),
-        ("Track your tasks", "Open Calendar to add tasks with due dates and mark them complete."),
-        ("Save your data", "Export your workspace file from the sidebar to import it later."),
-    ):
-        with st.expander(title):
-            st.write(text)
-    heading("My saved records")
-    if not records():
-        empty("No saved records", "Records from workspace tools appear here.")
-    for item in records():
-        with st.expander(f"{item['title']} · {item['date']}"):
-            st.text(item["details"])
-    with st.expander("Tips for weak internet"):
-        st.write("Turn on Low-data mode to disable the web font and animations.")
+def _letter_input() -> None:
+    state = st.session_state
+    if state.get("letter_input_language") != state.language:
+        state.letter_input_language = state.language
+    st.selectbox("Explanation language", list(LANGUAGES), key="letter_input_language",
+                 on_change=_sync_input_language)
+    with st.container(border=True):
+        mode = st.radio("How would you like to add your letter?", ("Upload", "Take photo"), horizontal=True, key="letter_input_mode")
+        field_key = state.get("input_version", 0)
+        if mode == "Upload":
+            file = st.file_uploader("Upload a photo of your letter", type=("jpg", "jpeg", "png", "webp"),
+                                    key=f"letter_upload_{field_key}")
+        else:
+            file = st.camera_input("Take a photo of your letter", key=f"letter_camera_{field_key}")
+        st.caption("Lay it flat, use good light, and include all four corners.")
+        photo = None
+        if file is not None:
+            try:
+                photo = prepare_image(file.getvalue())
+            except LetterError as exc:
+                st.error(str(exc))
+            else:
+                st.image(photo, caption="Your letter preview", width=440)
+        st.caption("Real photos go to the configured reading service for processing. Entendi does not save the photo to My Letters.")
+        if st.button("Explain my letter", type="primary", disabled=photo is None):
+            state["reading_job"] = {"photo": photo, "language": state.language, "id": uuid4().hex}
+            st.rerun()
+    with st.expander("Try a sample letter"):
+        for sample, label in SAMPLES.items():
+            st.button(label, key=f"sample_{sample}", on_click=start_letter, args=(sample,))
 
 
-def lab() -> None:
-    header("lab")
-    sample = st.selectbox("Comparison type", ("Drafts", "Options", "Notes"))
-    question = st.text_area("What are you comparing?")
-    left, right = st.columns(2)
-    first = left.text_area("Version A")
-    second = right.text_area("Version B")
-    if st.button("Run comparison", type="primary"):
-        st.session_state.lab_result = sample, question, first, second
-    if "lab_result" in st.session_state:
-        title, prompt, a, b = st.session_state.lab_result
-        st.subheader(prompt.strip() or title)
-        for col, label, content in zip(st.columns(2), ("Version A", "Version B"), (a, b)):
-            with col, st.container(border=True):
-                st.markdown(f"**{label}**")
-                st.text(content)
-        st.subheader("Comparison notes")
-        notes = st.text_area("What changed?")
-        if st.button("Save to comparison log"):
-            save("lab", prompt or title, f"A: {a}\nB: {b}\nNotes: {notes}")
-    st.subheader(f"Comparison log ({len(records('lab'))} saved entries)")
-    record_rows(records("lab"))
+def understand() -> None:
+    page_header("understand")
+    if "reading_job" in st.session_state:
+        _run_reading()
+    if error := st.session_state.pop("letter_error", None):
+        st.error(error)
+    if current := st.session_state.get("current_letter"):
+        st.button("Read another letter", on_click=start_letter)
+        letter_result(current["notice"], current["id"], current=current)
+    else:
+        _letter_input()
 
 
-def about() -> None:
-    header("about")
-    st.markdown("Entendi keeps your workspace records in your current session. Use the export controls to keep a local copy.")
-    with st.form("feedback"):
-        rating = st.radio("Your rating", [1, 2, 3, 4, 5], index=3, horizontal=True)
-        comment = st.text_area("Feedback")
+def _speak(notice: Notice) -> None:
+    sentence = " ".join((notice.explanation, *notice.actions_required, *notice.documents_to_bring))
+    config = json.dumps({"text": sentence, "lang": LANGUAGES.get(notice.language, "en-IN")},
+                        ensure_ascii=True).replace("<", "\\u003c")
+    st.iframe(f"""<!doctype html><html lang="en"><meta charset="utf-8">
+    <style>
+      body{{margin:2px;font:600 14px system-ui;color-scheme:light dark}}
+      button{{border:1px solid #9880c8;border-radius:100px;padding:8px 16px;background:#eee6fa;color:#392361;cursor:pointer}}
+      button:focus-visible{{outline:2px solid #aa8be3;outline-offset:2px}}
+      span{{margin-left:10px;font-size:12px;color:#7960a9}}
+      @media(prefers-color-scheme:dark){{span{{color:#c5acf4}}}}
+    </style>
+    <button id="listen" type="button">▶ Listen</button><span id="status" role="status"></span>
+    <script>
+      const options = {config};
+      const button = document.getElementById('listen');
+      const status = document.getElementById('status');
+      let speaking = false;
+      button.addEventListener('click', () => {{
+        if (!('speechSynthesis' in window)) {{
+          status.textContent = 'Audio is unavailable in this browser.'; return;
+        }}
+        if (speaking) {{
+          speechSynthesis.cancel(); speaking = false; button.textContent = '▶ Listen'; status.textContent = ''; return;
+        }}
+        const language = options.lang.split('-')[0];
+        const voices = speechSynthesis.getVoices().filter(voice => voice.localService && voice.lang.startsWith(language));
+        const voice = voices.find(voice => voice.lang.toLowerCase() === options.lang.toLowerCase()) || voices[0];
+        if (!voice) {{
+          status.textContent = 'No on-device voice found for this language.'; return;
+        }}
+        const utterance = new SpeechSynthesisUtterance(options.text);
+        utterance.lang = options.lang;
+        utterance.voice = voice;
+        utterance.rate = 0.88;
+        utterance.onend = () => {{ speaking = false; button.textContent = '▶ Listen'; status.textContent = ''; }};
+        utterance.onerror = () => {{
+          if (!speaking) return;
+          speaking = false; button.textContent = '▶ Listen'; status.textContent = 'Audio could not start.';
+        }};
+        speaking = true; button.textContent = '■ Stop'; status.textContent = 'Playing…';
+        speechSynthesis.speak(utterance);
+      }});
+    </script></html>""", height=52, alt="Listen to the letter explanation")
+
+
+def _checklist(lines: list[str] | tuple[str, ...], prefix: str, empty: str) -> None:
+    if not lines:
+        st.caption(empty)
+    checks = st.session_state.setdefault("checklist_marks", {})
+    for index, line in enumerate(lines):
+        key = f"check_{prefix}_{index}"
+        def remember(widget=key):
+            checks[widget] = st.session_state[widget]
+        st.checkbox(line, value=checks.get(key, False), key=key, on_change=remember)
+
+
+def _calendar_button(day: date, title: str, entry_id: str, label: str, key: str) -> None:
+    st.download_button(label, data.make_calendar([(day, title, entry_id)]), file_name="entendi-deadline.ics",
+                       mime="text/calendar", key=key, on_click="ignore")
+
+
+def _translate(current: dict, language: str, simpler: bool = False) -> None:
+    job = {key: current[key] for key in ("id", "sample", "sample_day")}
+    job.update(language=language, transcription=current["notice"].transcription, simpler=simpler)
+    st.session_state["reading_job"] = job
+    st.rerun()
+
+
+def _add_feedback(title: str, value: dict) -> None:
+    data.add_entry(st.session_state.entendi_data, "feedback", title, json.dumps(value, ensure_ascii=False), today())
+    st.success("Feedback saved in this session. It’s included if you download My data.")
+
+
+def letter_result(notice: Notice, entry_id: str, *, current: dict | None = None) -> None:
+    prefix = f"{'current' if current else 'saved'}_{entry_id}"
+    title = f"{notice.issuer} · {notice.document_type}"
+    if current and current.get("sample"):
+        st.info("Fictional sample letter for demonstration.")
+    if notice.needs_human_check:
+        with st.container(border=True, key=f"confirm_{entry_id}"):
+            st.markdown("**Please confirm with the official office**")
+            for text in notice.unclear_parts or ["Some details or source quotes could not be verified."]:
+                st.text(f"• {text}")
+    else:
+        markup(ui.badge_html("Read clearly", "quiet"))
+    st.subheader("What this is")
+    markup(f'<p class="letter-summary">{ui.esc(notice.explanation)}</p>')
+    markup(f'<div class="letter-badges">{ui.badge_html(notice.issuer)}{ui.badge_html(notice.document_type)}</div>')
+    _speak(notice)
+    facts = [("Do by", notice.deadline.strftime("%d %b %Y") if notice.deadline else "No deadline found",
+              data.days_left(notice.deadline, today()) if notice.deadline else "Confirm the date if you’re unsure."),
+             ("Amount", notice.amount or "Not stated", "")]
+    if notice.if_ignored:
+        facts.append(("If ignored", notice.if_ignored, ""))
+    for col, (label, value, footnote) in zip(st.columns(3, gap="small"), facts):
+        with col:
+            markup(ui.fact_html(label, value, footnote))
+
+    st.subheader("What you need to do")
+    _checklist(notice.actions_required, f"{prefix}_{notice.language}_actions", "No actions were stated.")
+    st.subheader("Bring these")
+    _checklist(notice.documents_to_bring, f"{prefix}_{notice.language}_documents", "No documents were stated.")
+    st.subheader("Proof from your letter")
+    original, explanation = st.columns(2, gap="medium")
+    with original, st.container(border=True):
+        st.markdown("**Your letter**")
+        if current and current.get("photo"):
+            st.image(current["photo"], width="stretch")
+        else:
+            st.caption("The original photo isn’t kept in My Letters.")
+    with explanation, st.container(border=True):
+        st.markdown("**Entendi’s explanation**")
+        if not notice.quotes:
+            st.caption("Source text isn’t retained in My Letters." if not current else "No readable excerpts were identified.")
+        for index, excerpt in enumerate(notice.quotes, start=1):
+            label = "✓ Found in letter" if excerpt.verified else "⚑ Couldn’t verify"
+            with st.expander(f"Quote {index} · {label}"):
+                st.text(excerpt.text)
+        if notice.quotes:
+            st.caption("Quotes are matched against the transcription. Check the original if anything looks wrong.")
+
+    calendar, save, share = st.columns(3, gap="small")
+    with calendar:
+        if notice.deadline:
+            _calendar_button(notice.deadline, title, entry_id, "Add to calendar", f"ics_{prefix}")
+        else:
+            st.button("Add to calendar", disabled=True, key=f"no_ics_{prefix}", help="No deadline was found in this letter.")
+    with save:
+        letter = find_entry(entry_id)
+        if st.button("Saved to My Letters" if letter else "Save to My Letters", disabled=bool(letter),
+                     key=f"save_{prefix}", type="primary"):
+            data.add_entry(st.session_state.entendi_data, "letter", title, notice.saved_json(), today(), entry_id=entry_id)
+            st.rerun()
+    with share:
+        summary = f"{title}\n{notice.explanation}"
+        if notice.deadline:
+            summary += f"\nDo by: {notice.deadline:%d %b %Y}"
+        st.link_button("Share on WhatsApp", "https://wa.me/?text=" + quote(summary, safe=""),
+                       help="Opens WhatsApp with the explanation so you can review it before sending.")
+    if current:
+        with st.expander("Explain in another language"):
+            language = st.selectbox("Choose a language", list(LANGUAGES), index=list(LANGUAGES).index(notice.language),
+                                    key=f"translate_{prefix}")
+            if st.button("Explain in this language", disabled=language == notice.language, key=f"run_{prefix}"):
+                _translate(current, language)
+        if st.button("Use simpler words", key=f"simpler_{prefix}"):
+            _translate(current, notice.language, simpler=True)
+    with st.expander("Something looks wrong"):
+        with st.form(f"report_{prefix}", clear_on_submit=True):
+            issue = st.text_area("What looked wrong?", max_chars=500,
+                                 help="Leave out names, reference numbers and other personal details.")
+            if st.form_submit_button("Save report"):
+                if issue.strip():
+                    _add_feedback("Letter explanation issue", {"comment": issue.strip()})
+                else:
+                    st.warning("Describe what looked wrong before saving.")
+    st.button("Check my benefits", key=f"to_benefits_{prefix}", on_click=go, args=("benefits",))
+
+
+def open_letter(entry_id: str) -> None:
+    st.session_state["open_letter"] = entry_id
+    go("letters")
+
+
+def close_letter() -> None:
+    st.session_state.pop("open_letter", None)
+
+
+def _remove_letter(entry_id: str) -> None:
+    entries = saved_entries()
+    entries[:] = [entry for entry in entries if entry["id"] != entry_id]
+    if st.session_state.get("open_letter") == entry_id:
+        close_letter()
+
+
+def my_letters() -> None:
+    page_header("letters")
+    st.caption("Saved letters keep only the explanation and facts. Photos, full transcriptions and source quotes are left out, including when you download My data.")
+    if entry := find_entry(st.session_state.get("open_letter", "")):
+        st.button("Back to My Letters", on_click=close_letter)
+        letter_result(Notice.model_validate_json(entry["details"]), entry["id"])
+        return
+    status = st.selectbox("Status", ("All", "Open", "Done"), key="letter_filter")
+    letters = [entry for entry in saved_entries("letter") if status == "All" or entry["done"] == (status == "Done")]
+    if not letters:
+        markup(ui.empty_html("No letters here yet", "Save a letter’s explanation to find it here later."))
+        st.button("Understand a Letter", on_click=go, args=("understand",))
+    for entry in letters:
+        notice = Notice.model_validate_json(entry["details"])
+        with st.container(border=True):
+            st.subheader(notice.document_type)
+            st.text(f"{notice.issuer} · Saved {date.fromisoformat(entry['date']):%d %b %Y}")
+            chips = ui.badge_html("Done" if entry["done"] else "Open")
+            if notice.deadline:
+                chips += ui.badge_html(f"Due {notice.deadline:%d %b %Y}")
+            markup(f'<div class="letter-badges">{chips}</div>')
+            left, middle, right = st.columns(3)
+            left.button("Open", key=f"open_{entry['id']}", on_click=open_letter, args=(entry["id"],))
+            middle.button("Mark open" if entry["done"] else "Mark done", key=f"mark_{entry['id']}",
+                          on_click=_set_done, args=(entry["id"], not entry["done"]))
+            right.button("Delete", key=f"delete_{entry['id']}", on_click=_remove_letter, args=(entry["id"],))
+
+
+def _set_done(entry_id: str, done: bool | str) -> None:
+    if entry := find_entry(entry_id):
+        entry["done"] = st.session_state[done] if isinstance(done, str) else done
+
+
+def deadlines() -> None:
+    page_header("deadlines")
+    groups = data.deadline_groups(saved_entries(), today())
+    events = [(day, entry["title"], entry["id"]) for group, pairs in groups.items() if group != "Done" for day, entry in pairs]
+    st.download_button("Download all (.ics)", data.make_calendar(events), file_name="entendi-deadlines.ics",
+                       mime="text/calendar", disabled=not events, on_click="ignore")
+    for group, rows in groups.items():
+        markup(ui.group_heading(group))
+        if not rows:
+            st.caption("No deadlines here.")
+        for due, entry in rows:
+            with st.container(border=True):
+                key = entry["id"]
+                left, middle, right = st.columns([1.55, 1, 1.25])
+                with left:
+                    label = data.days_left(due, today()) if not entry["done"] else f"Due {due:%d %b %Y}"
+                    markup(ui.badge_html(label, "warm" if group == "Overdue" else ""))
+                    if entry["category"] == "letter":
+                        st.button(entry["title"], key=f"deadline_open_{key}", on_click=open_letter, args=(key,))
+                    else:
+                        st.text(entry["title"])
+                with middle:
+                    done_key = f"deadline_done_{key}"
+                    st.checkbox("Done", value=entry["done"], key=done_key, on_change=_set_done, args=(key, done_key))
+                with right:
+                    _calendar_button(due, entry["title"], key, "Add to phone calendar", f"deadline_calendar_{key}")
+    with st.expander("Add my own reminder"):
+        with st.form("reminder", clear_on_submit=True):
+            title = st.text_input("Reminder title", max_chars=120)
+            due = st.date_input("Due date", value=today())
+            if st.form_submit_button("Add reminder", type="primary"):
+                if not title.strip():
+                    st.warning("Enter a reminder title.")
+                else:
+                    data.add_entry(st.session_state.entendi_data, "reminder", title, "{}", due)
+                    st.rerun()
+
+
+def _selection(field: str, label: str, options: tuple[str, ...], profile: dict) -> str:
+    existing = profile.get(field)
+    return st.selectbox(label, options, index=options.index(existing) if existing in options else 0)
+
+
+def _number(profile: dict, field: str, default: int, maximum: int) -> int:
+    try:
+        return max(0, min(int(profile.get(field, default)), maximum))
+    except ValueError:
+        return default
+
+
+def benefits_check() -> None:
+    page_header("benefits")
+    st.info("This check uses fixed rules, not AI. It covers three central schemes in India. The office makes the final decision.")
+    profile = st.session_state.entendi_data["profile"]
+    unknown = ("Not sure", "Yes", "No")
+    with st.form("eligibility"):
+        first, second = st.columns(2)
+        with first:
+            age = st.number_input("Age", min_value=0, max_value=125, value=_number(profile, "age", 18, 125))
+            income = st.number_input("Annual income (₹)", min_value=0, max_value=100_000_000,
+                                     value=_number(profile, "income", 0, 100_000_000), step=1000)
+            occupation = _selection("occupation", "Occupation",
+                                    ("Select occupation", "Unorganised worker", "Salaried worker", "Student", "Retired", "Other"),
+                                    profile)
+        with second:
+            state = _selection("state", "State or union territory", ("Select state", *benefits.STATES), profile)
+            bpl = _selection("bpl", "Listed below the poverty line (BPL)?", unknown, profile)
+            gender = _selection("gender", "Gender", ("Prefer not to say", "Woman", "Man", "Another gender"), profile)
+        with st.expander("More details for pension checks"):
+            widowed = _selection("widowed", "Are you widowed?", unknown, profile)
+            monthly_income = _selection("monthly_income", "Usual monthly income",
+                                        ("Not sure", "₹15,000 or less", "Above ₹15,000"), profile)
+            excluded = _selection("pension_exclusion", "Covered by NPS, ESIC or EPFO, or pay income tax?", unknown, profile)
+        submitted = st.form_submit_button("Check my benefits", type="primary")
+        if submitted:
+            if state == "Select state" or occupation == "Select occupation":
+                st.warning("Choose a state or union territory and an occupation to run the check.")
+            else:
+                profile.update(age=str(age), state=state, income=str(income), occupation=occupation, bpl=bpl, gender=gender,
+                               widowed=widowed, pension_exclusion=excluded, monthly_income=monthly_income)
+    if not data.PROFILE_FIELDS <= profile.keys() or profile["state"] not in benefits.STATES:
+        return
+    try:
+        schemes = benefits.check(profile)
+    except ValueError:
+        st.warning("Some saved answers are invalid. Check the form and submit it again.")
+        return
+    st.caption("A ‘Not likely’ result can also mean an answer is missing or uncertain. The PM-SYM rule uses monthly income.")
+    for index, scheme in enumerate(schemes):
+        with st.container(border=True):
+            st.subheader(scheme.name)
+            markup(ui.badge_html("Likely" if scheme.likely else "Not likely", "quiet"))
+            st.caption(scheme.criteria)
+            st.markdown("**Documents to bring**")
+            _checklist(scheme.documents, f"scheme_{index}_{scheme.name[:30]}", "")
+            st.text(scheme.office)
+            st.link_button("Official scheme information", scheme.url)
+            st.caption("The office makes the final decision.")
+
+
+def help_about() -> None:
+    page_header("help")
+    st.subheader("How it works")
+    markup(ui.steps_html())
+    st.subheader("What Entendi can’t do")
+    st.markdown("- It may misread a blurry photo. Confirm dates, amounts and next steps with the official office.\n"
+                "- It doesn’t give legal advice or decide whether a letter is genuine.\n"
+                "- Benefits Check follows fixed rules. The office makes the final decision.")
+    st.subheader("Privacy")
+    st.markdown("Entendi keeps the photo temporarily in your session so you can compare it. Real photos are sent to the "
+                "configured reading service for processing. Saved letters and downloads omit the photo, full transcription "
+                "and source quotes. My data can contain your explanations and benefits answers, so keep the download private.")
+    st.subheader("Keep an offline copy")
+    paragraphs = ["Entendi · Saved letters", "For important details, check your original letter or ask the official office."]
+    for entry in saved_entries("letter"):
+        notice = Notice.model_validate_json(entry["details"])
+        lines = [entry["title"], notice.explanation]
+        if notice.deadline:
+            lines.append(f"Do by: {notice.deadline:%d %b %Y}")
+        lines.extend(f"• {line}" for line in notice.actions_required)
+        paragraphs.append("\n".join(lines))
+    st.download_button("Download offline copy", "\n\n".join(paragraphs), file_name="entendi-letters.txt",
+                       mime="text/plain", disabled=len(paragraphs) == 2, on_click="ignore")
+    if len(paragraphs) == 2:
+        st.caption("Save a letter first to download an offline copy.")
+    st.subheader("Feedback")
+    with st.form("feedback", clear_on_submit=True):
+        rating = st.radio("Rating", (1, 2, 3, 4, 5), index=3, horizontal=True)
+        comment = st.text_area("Comment", max_chars=500)
         if st.form_submit_button("Save feedback"):
-            save("feedback", f"Rating {rating}/5", comment)
-    st.subheader("Feedback saved this session")
-    if not records("feedback"):
-        st.caption("No feedback yet.")
-    record_rows(records("feedback"))
+            _add_feedback("Feedback", {"rating": rating, "comment": comment.strip()})
+    st.caption("Built for EvoHacks 2.")
 
 
 ROUTES = {
-    "home": home, "dashboard": dashboard, "workspace": workspace, "updates": updates,
-    "review": review, "ask": voice_notes, "calendar": calendar, "compare": compare,
-    "journal": journal, "guides": guides, "lab": lab, "about": about,
+    "home": home, "understand": understand, "letters": my_letters, "deadlines": deadlines,
+    "benefits": benefits_check, "help": help_about,
 }
 
 
 def render(page: str) -> None:
-    if page in ROUTES:
-        ROUTES[page]()
-    else:
-        header(page)
-        feature_form(page)
+    ROUTES.get(page, home)()

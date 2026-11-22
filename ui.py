@@ -6,26 +6,13 @@ from pathlib import Path
 import random
 from urllib.parse import quote
 
-FEATURE_ORDER = ("plan", "issue", "manual", "resources", "workflow")
-
 _ICONS = {
-    "home": '<path d="M4 11l8-7 8 7v9H4z"/>',
-    "dashboard": '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
-    "plan": '<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/>',
-    "issue": '<path d="M12 3l9 16H3zM12 9v4M12 16h.01"/>',
-    "manual": '<rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 9h8M8 13h8"/>',
-    "resources": '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/>',
-    "workflow": '<path d="M4 12h16M15 7l5 5-5 5"/><circle cx="7" cy="7" r="2"/><circle cx="7" cy="17" r="2"/>',
-    "lab": '<path d="M9 3h6M10 3v6l-5 9a2 2 0 002 3h10a2 2 0 002-3l-5-9V3"/><path d="M8 15h8"/>',
-    "about": '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
-    "workspace": '<path d="M3 21V10l9-6 9 6v11z"/><path d="M9 21v-6h6v6"/>',
-    "ask": '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/>',
-    "review": '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
-    "updates": '<path d="M6 17h12l-2-3V9a4 4 0 00-8 0v5zM10 20h4"/>',
-    "calendar": '<rect x="4" y="5" width="16" height="16" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M9 15l2 2 4-4"/>',
-    "compare": '<path d="M5 20v-8M12 20V5M19 20v-5"/><path d="M3 20h18"/>',
-    "journal": '<path d="M6 3h11a2 2 0 012 2v16H8a2 2 0 01-2-2z"/><path d="M6 19a2 2 0 012-2h11M10 8h6M10 12h6"/>',
-    "guides": '<path d="M3 5c3-1 6-1 9 1 3-2 6-2 9-1v14c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 6v14"/>',
+    "home": '<path d="M4 11l8-7 8 7v9H4zM10 20v-6h4v6"/>',
+    "understand": '<rect x="4" y="6" width="16" height="13" rx="2"/><path d="M4 8l8 6 8-6"/>',
+    "letters": '<path d="M7 5h12v15H7a2 2 0 010-4h12M7 16V5a2 2 0 00-2 2v11M10 9h6M10 12h4"/>',
+    "deadlines": '<rect x="4" y="5" width="16" height="16" rx="3"/><path d="M4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"/>',
+    "benefits": '<path d="M12 22s7-4 7-10V5l-7-3-7 3v7c0 6 7 10 7 10zM9 12l2 2 4-4"/>',
+    "help": '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
 }
 
 
@@ -221,55 +208,23 @@ footer{visibility:hidden;}
 .lmsg span{position:absolute;left:0;right:0;opacity:0;animation:lmsg 9s infinite;}
 .lmsg span:nth-child(2){animation-delay:3s}.lmsg span:nth-child(3){animation-delay:6s}
 @keyframes lmsg{0%{opacity:0}6%,30%{opacity:1}36%,100%{opacity:0}}
-/* ---------- weather ---------- */
-.wx-hero{display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem;padding:1.4rem 1.7rem;margin-bottom:1rem;border-radius:24px;background:var(--wx);border:1px solid var(--border);box-shadow:var(--shadow);animation:riseIn .8s both;}
-.wx-hero .wx-ico{width:84px;height:84px;flex:0 0 auto;}
-.wx-hero .wx-main{flex:1 1 220px;}
-.wx-place{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);}
-.wx-temp{font-size:3.3rem;font-weight:800;letter-spacing:-.05em;line-height:1.05;}
-.wx-desc{font-size:1.05rem;color:var(--muted);font-weight:500;}
-.wx-facts{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.7rem;}
-.wx-facts span{padding:.28rem .75rem;border-radius:999px;background:var(--card);border:1px solid var(--border);font-size:.84rem;font-weight:600;}
-.wx-upd{font-size:.78rem;color:var(--muted);margin-top:.6rem;}
-.wx-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:.6rem;margin:.2rem 0 1rem;}
-.wx-day{text-align:center;padding:.8rem .5rem;border-radius:18px;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);animation:pop .6s both;}
-.wx-day.today{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
-.wx-day b{display:block;font-size:.85rem;font-weight:700;}
-.wx-day svg{width:38px;height:38px;margin:.2rem 0;}
-.wx-day .hi{font-weight:800;font-size:1.05rem;}.wx-day .lo{color:var(--muted);font-size:.85rem;}
-.wx-day .rn{color:var(--sky);font-size:.8rem;font-weight:600;margin-top:.15rem;}
-.al-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.7rem;margin:.4rem 0 1rem;}
-.al{display:flex;gap:.7rem;padding:.85rem 1rem;border-radius:16px;border:1px solid var(--border);animation:riseIn .6s both;}
-.al i{flex:0 0 auto;width:10px;height:10px;border-radius:50%;margin-top:.4rem;}
-.al b{display:block;font-size:.96rem;margin-bottom:.1rem;}.al span{font-size:.88rem;color:var(--muted);line-height:1.45;}
-.al-warn{background:var(--warm-soft);}.al-warn i{background:var(--warm);}
-.al-good{background:var(--good-soft);}.al-good i{background:var(--good);}
-.al-info{background:var(--sky-soft);}.al-info i{background:var(--sky);}
-.attrib{font-size:.76rem;color:var(--muted);}
-/* ---------- progress, tasks, journal, sources ---------- */
-.progress-row{padding:1rem 1.2rem;margin-bottom:.7rem;border-radius:18px;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);animation:riseIn .7s both;}
-.progress-row .top{display:flex;justify-content:space-between;gap:.6rem;align-items:baseline;flex-wrap:wrap;}
-.progress-row b{font-size:1.05rem;}.progress-row .stg{color:var(--accent);font-weight:600;font-size:.88rem;}
-.progress-row .sub{color:var(--muted);font-size:.84rem;margin-top:.15rem;}
-.prog{height:9px;border-radius:9px;background:var(--accent-soft);margin-top:.6rem;overflow:hidden;}
-.prog i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--progress-start),var(--accent));animation:fillbar 1.2s cubic-bezier(.2,.8,.2,1) both;}
+/* ---------- letter details ---------- */
+.letter-loading{display:grid;justify-items:center;gap:.8rem;padding:2rem;color:var(--accent);}
+.letter-summary{font-size:clamp(1.15rem,2.1vw,1.65rem);line-height:1.5;font-weight:650;}
+.letter-badges{display:flex;gap:.45rem;flex-wrap:wrap;margin:.3rem 0 .65rem;}
+.letter-fact{background:var(--card);border:1px solid var(--border);border-radius:17px;padding:.8rem 1rem;
+  min-height:6.4rem;display:grid;align-content:start;gap:.25rem;box-shadow:var(--shadow);overflow-wrap:anywhere;}
+.letter-fact span{color:var(--muted);font-size:.8rem;font-weight:650;}
+.letter-fact b{font-size:1.02rem;color:var(--text);}
+.letter-fact small{color:var(--muted);}
+[class*="st-key-confirm_"]{border-color:var(--accent)!important;background:var(--accent-soft)!important;}
 .badge{display:inline-block;padding:.18rem .65rem;border-radius:999px;font-size:.76rem;font-weight:700;background:var(--accent-soft);color:var(--accent);}
 .badge.warn{background:var(--warm-soft);color:var(--warm);}.badge.bad{background:var(--danger-soft);color:var(--danger);}.badge.sky{background:var(--sky-soft);color:var(--sky);}
 .group-h{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;margin:1.1rem 0 .4rem;color:var(--muted);}
 .group-h.bad{color:var(--danger);}.group-h.today{color:var(--accent);}
-.jr{display:flex;gap:1rem;padding:.9rem 1.1rem;margin-bottom:.6rem;border-radius:18px;background:var(--card);border:1px solid var(--border);box-shadow:var(--shadow);animation:riseIn .6s both;}
-.jr .jd{flex:0 0 74px;text-align:center;}.jr .jd b{display:block;font-size:1.5rem;line-height:1;font-weight:800;}.jr .jd span{font-size:.74rem;color:var(--muted);font-weight:600;text-transform:uppercase;}
-.jr .jb{flex:1;min-width:0;}.jr .jb p{margin:.25rem 0 0;font-size:.93rem;overflow-wrap:anywhere;}.jr .jm{font-size:.82rem;color:var(--muted);margin-top:.2rem;}
-.srcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.6rem;margin:.3rem 0;}
-.srcs a{display:block;padding:.7rem .9rem;border-radius:14px;background:var(--card);border:1px solid var(--border);text-decoration:none;transition:border-color .2s,transform .2s;}
-.srcs a:hover{border-color:var(--accent);transform:translateY(-2px);}
-.srcs a b{display:block;color:var(--accent);font-size:.9rem;}.srcs a span{color:var(--muted);font-size:.8rem;}
 .empty{text-align:center;padding:1.6rem 1rem;border:2px dashed var(--fborder);border-radius:20px;color:var(--muted);background:var(--card);}
 .empty b{display:block;color:var(--text);font-size:1.02rem;margin-bottom:.2rem;}
-.advrow{padding:.8rem 1rem;margin-bottom:.5rem;border-radius:16px;background:var(--card);border:1px solid var(--border);}
-.advrow b{display:block;font-size:.96rem;}.advrow span{font-size:.8rem;color:var(--muted);}
 .callout{padding:.9rem 1.1rem;border-radius:16px;background:var(--warm-soft);color:var(--text);font-size:.92rem;border:1px solid var(--border);}
-.qcard{padding:.2rem 0 .1rem;}
 /* ---------- native widgets ---------- */
 [data-testid="stForm"]{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:1.4rem 1.5rem;box-shadow:var(--shadow);animation:riseIn .9s .1s cubic-bezier(.2,.8,.2,1) both;}
 [data-baseweb="input"],[data-baseweb="base-input"],[data-baseweb="textarea"],[data-baseweb="select"]>div{background:var(--field)!important;border-color:var(--fborder)!important;border-radius:12px!important;transition:box-shadow .25s,border-color .25s;}
@@ -311,7 +266,7 @@ footer{visibility:hidden;}
 [data-testid="stProgress"] > div > div{background:var(--accent-soft)!important;}
 [data-testid="stImage"] img{border-radius:14px;}
 ::-webkit-scrollbar{width:8px;height:8px;}::-webkit-scrollbar-thumb{background:var(--fborder);border-radius:8px;}
-@media (max-width:700px){.block-container{padding-left:1rem;padding-right:1rem;}.pagehead{flex-direction:column;text-align:center;padding:1.1rem;}.pagehead .ptitle{flex-direction:column;}.st-key-aside{position:static;}.wx-temp{font-size:2.7rem;}.jr .jd{flex-basis:56px;}}
+@media (max-width:700px){.block-container{padding-left:1rem;padding-right:1rem;}.pagehead{flex-direction:column;text-align:center;padding:1.1rem;}.pagehead .ptitle{flex-direction:column;}.st-key-aside{position:static;}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;}}
 """
 
@@ -334,7 +289,7 @@ _LARGE = (".stApp{font-size:1.18rem;}.stApp p,.stApp li,.stApp label,.stApp inpu
           ".stApp [data-testid=\"stWidgetLabel\"] p{font-size:1.1rem!important;}.stApp button{min-height:3.2rem;}")
 _LOW_DATA = ("*,*::before,*::after{animation:none!important;transition:none!important;}.ico *{stroke-dashoffset:0!important;}"
              ".cnt{counter-reset:none;}.stApp *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}"
-             "[class*=\"fcard_\"],[class*=\"st-key-sec_\"],.pagehead,.wx-day{opacity:1!important;}.gt{animation:none!important;}")
+             "[class*=\"fcard_\"],[class*=\"st-key-sec_\"],.pagehead{opacity:1!important;}.gt{animation:none!important;}")
 
 
 def _min(s: str) -> str:
@@ -361,8 +316,6 @@ def _navigation_css(pages: tuple[str, ...]) -> str:
 def global_css(dark: bool = False, large_text: bool = False, low_data: bool = False,
                *, navigation: tuple[str, ...] = ()) -> str:
     extra = [f'[class*="st-key-sec_{i}"]{{animation-delay:{i * .12:.2f}s;}}' for i in range(5)]
-    for i, k in enumerate(FEATURE_ORDER):
-        extra.append(f'[class*="fcard_{k}"],[class*="fcard_h_{k}"]{{animation-delay:{.25 + i * .12:.2f}s;}}')
     extra.append(_navigation_css(navigation))
     extra.append(_DARK_ONLY if dark else _LIGHT_ONLY)
     if large_text:
@@ -427,12 +380,11 @@ def mascot(size: int = 120) -> str:
 
 
 def hero_html() -> str:
-    chips = "".join(f"<span>{label}</span>" for label in ("Updates", "File review", "Voice notes", "Calendar", "Offline export"))
-    return _min(f'''<div class="hero"><div class="mwrap"><div class="halo"></div><div class="bubble">Welcome to Entendi.</div>{mascot(120)}</div>
+    return _min(f'''<div class="hero"><div class="mwrap"><div class="halo"></div>
+<div class="bubble">Welcome to Entendi.</div>{mascot(120)}</div>
 <span class="eyebrow">Entendi</span>
-<div class="hero-title">Your workspace,<br><span class="gt">beautifully simple.</span></div>
-<p>Keep your notes, files, and plans together, with a place to pick up where you left off.</p>
-<div class="chips">{chips}</div></div>''')
+<h1 class="hero-title">Understand any official letter,<br><span class="gt">in your language.</span></h1>
+<p>See what the letter is about, what to do next, and when it’s due.</p></div>''')
 
 
 def page_header(page: str, title: str, tagline: str, bubble: str) -> str:
@@ -441,11 +393,11 @@ def page_header(page: str, title: str, tagline: str, bubble: str) -> str:
 
 
 def steps_html() -> str:
-    items = [("Set up your workspace", "Add a name and organize your items."),
-             ("Choose a tool", "Capture a note, compare items, or make a plan."),
-             ("Track what is next", "Use the calendar and journal to keep up.")]
+    steps = (("Photo", "Upload a letter or take a clear photo."),
+             ("Read", "Get a plain-language explanation and see the original wording."),
+             ("Act", "Follow the checklist and add important dates to your calendar."))
     cards = "".join(f"<div class='step'><i>STEP {n}</i><b>{title}</b><span>{detail}</span></div>"
-                    for n, (title, detail) in enumerate(items, 1))
+                    for n, (title, detail) in enumerate(steps, 1))
     return _min(f'<div class="steps">{cards}</div>')
 
 
@@ -453,33 +405,12 @@ def feature_card_html(key: str, title: str, tagline: str) -> str:
     return _min(f"<div class='ficon'>{icon(key)}</div><div class='ftitle'>{esc(title)}</div><div class='ftag'>{esc(tagline)}</div>")
 
 
-def stat_html(value, label: str, icon_unused: str = "", delay: float = 0) -> str:
-    num = f"<b class='cnt' style='--n:{value}'></b>" if isinstance(value, int) else f"<b>{esc(value)}</b>"
-    return _min(f"<div class='stat' style='animation-delay:{delay}s'>{num}<span>{esc(label)}</span></div>")
-
-
-def heading(text: str) -> str:
-    return f"<div class='h2'>{esc(text)}</div>"
-
-
 def nav_label(text: str) -> str:
     return f"<div class='navlabel'>{esc(text)}</div>"
 
 
-def aside_html() -> str:
-    tips = ("Fields marked with * are required.", "Give each item a clear title.",
-            "Add enough context to recognize it later.", "Export your workspace to keep a copy after the session.")
-    return _min("<div class='aside'><h4>Before you start</h4><ul>" + "".join(f"<li>{esc(t)}</li>" for t in tips) + "</ul></div>")
-
-
 def sidebar_brand() -> str:
     return _min(f"<div class='brand'>{mascot(38)}<b>Entendi</b></div>")
-
-
-def progress_html(name: str, stage: str, pct: int, sub: str, badge: str = "") -> str:
-    b = f"<span class='badge'>{esc(badge)}</span>" if badge else ""
-    return _min(f"""<div class="progress-row"><div class="top"><b>{esc(name)}</b><span class="stg">{esc(stage)}</span>{b}</div>
-<div class="sub">{esc(sub)}</div><div class="prog"><i style="width:{max(0, min(100, int(pct)))}%"></i></div></div>""")
 
 
 def group_heading(text: str, kind: str = "") -> str:
@@ -494,13 +425,9 @@ def empty_html(title: str, text: str) -> str:
     return _min(f"<div class='empty'><b>{esc(title)}</b>{esc(text)}</div>")
 
 
-def record_html(title: str, when: str, category: str) -> str:
-    return _min(f"<div class='advrow'><b>{esc(title)}</b><span>{esc(when)} · {esc(category)}</span></div>")
-
-
-def journal_item_html(day: str, month: str, kind: str, title: str, note: str, meta: str) -> str:
-    return _min(f"""<div class="jr"><div class="jd"><b>{esc(day)}</b><span>{esc(month)}</span></div><div class="jb">
-<div>{badge_html(kind)} <b>{esc(title)}</b></div><p>{esc(note)}</p><div class="jm">{esc(meta)}</div></div></div>""")
+def fact_html(label: str, value: str, footnote: str = "") -> str:
+    return (f'<div class="letter-fact"><span>{esc(label)}</span><b>{esc(value)}</b>'
+            f'<small>{esc(footnote)}</small></div>')
 
 
 def callout_html(text: str) -> str:

@@ -1,0 +1,12 @@
+{
+  "issuer": "Birch Community Clinic",
+  "days": 2,
+  "transcription": "Birch Community Clinic\nAppointment confirmation\nConfirm your visit by {due}.\nBring your appointment slip and any current prescriptions.\nNo appointment fee is listed in this letter.\nFictional example. Do not contact a real clinic.",
+  "quotes": ["Confirm your visit by {due}.", "Bring your appointment slip and any current prescriptions."],
+  "deadline_quote": "Confirm your visit by {due}.",
+  "languages": {
+    "English":{"document_type":"Appointment confirmation","explanation":"This letter asks you to confirm your clinic visit by {due}.","simple":"Confirm your clinic visit by {due}.","actions_required":["Confirm the visit with the clinic by {due}."],"documents_to_bring":["Appointment slip","Current prescriptions, if any"]},
+    "Hindi":{"document_type":"क्लिनिक की मुलाक़ात की पुष्टि","explanation":"यह पत्र आपसे {due} तक क्लिनिक की मुलाक़ात की पुष्टि करने को कहता है।","simple":"{due} तक क्लिनिक की मुलाक़ात पक्की करें।","actions_required":["{due} तक क्लिनिक से मुलाक़ात की पुष्टि करें।"],"documents_to_bring":["मुलाक़ात की पर्ची","मौजूदा दवाओं के पर्चे, अगर हों"]},
+    "Tamil":{"document_type":"மருத்துவமனை வருகை உறுதிப்படுத்தல்","explanation":"மருத்துவமனை வருகையை {due}க்குள் உறுதிப்படுத்துமாறு இந்தக் கடிதம் கேட்கிறது.","simple":"மருத்துவமனை வருகையை {due}க்குள் உறுதிப்படுத்துங்கள்.","actions_required":["{due}க்குள் வருகையை மருத்துவமனையுடன் உறுதிப்படுத்துங்கள்."],"documents_to_bring":["முன்பதிவுச் சீட்டு","தற்போதைய மருந்துச் சீட்டுகள் இருந்தால் அவை"]}
+  }
+}

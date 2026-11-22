@@ -1,0 +1,11 @@
+{
+  "issuer": "Cedar Lane School Office",
+  "days": null,
+  "transcription": "Cedar Lane School Office\nRequest for enrolment documents\nBring a copy of the birth certificate and proof of address.\nSubmit the copies at the school office.\nSubmission deadline: [unclear].\nFictional example. Do not bring real documents.",
+  "quotes": ["Bring a copy of the birth certificate and proof of address.", "Submit the copies at the school office."],
+  "languages": {
+    "English":{"document_type":"School document request","explanation":"The school asks for two documents for enrolment. The deadline cannot be read.","simple":"Bring two documents to the school office. Ask when they are due.","actions_required":["Submit the copies at the school office."],"documents_to_bring":["Copy of the birth certificate","Proof of address"],"unclear_parts":["The submission deadline is unreadable."]},
+    "Hindi":{"document_type":"स्कूल के दस्तावेज़ों का अनुरोध","explanation":"स्कूल में दाख़िले के लिए दो दस्तावेज़ माँगे गए हैं। अंतिम तारीख़ पढ़ी नहीं जा सकी।","simple":"स्कूल के दफ़्तर में दो दस्तावेज़ दें। अंतिम तारीख़ पूछें।","actions_required":["दस्तावेज़ों की प्रतियाँ स्कूल के दफ़्तर में दें।"],"documents_to_bring":["जन्म प्रमाणपत्र की प्रति","पते का प्रमाण"],"unclear_parts":["दस्तावेज़ जमा करने की अंतिम तारीख़ पढ़ी नहीं जा सकी।"]},
+    "Tamil":{"document_type":"பள்ளி ஆவணக் கோரிக்கை","explanation":"பள்ளிச் சேர்க்கைக்கு இரண்டு ஆவணங்கள் தேவை. கடைசித் தேதியைப் படிக்க முடியவில்லை.","simple":"இரண்டு ஆவணங்களைப் பள்ளி அலுவலகத்தில் கொடுங்கள். கடைசித் தேதியைக் கேளுங்கள்.","actions_required":["ஆவண நகல்களைப் பள்ளி அலுவலகத்தில் கொடுங்கள்."],"documents_to_bring":["பிறப்புச் சான்றிதழ் நகல்","முகவரிச் சான்று"],"unclear_parts":["ஆவணங்களைச் சமர்ப்பிக்கும் கடைசித் தேதியைப் படிக்க முடியவில்லை."]}
+  }
+}

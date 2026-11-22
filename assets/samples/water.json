@@ -1,0 +1,12 @@
+{
+  "issuer": "Maple Ward Water Office",
+  "days": 5,
+  "transcription": "Maple Ward Water Office\nWater service payment reminder\nThe amount due is INR 480.\nPay by {due}.\nBring this reminder and your latest bill to the counter.\nIf you miss the deadline, a late fee may apply.\nFictional example. Do not make a payment.",
+  "quotes": ["The amount due is INR 480.", "Pay by {due}.", "If you miss the deadline, a late fee may apply."],
+  "deadline_quote": "Pay by {due}.",
+  "languages": {
+    "English": {"document_type":"Water bill reminder","explanation":"This letter is a reminder to pay a water bill of INR 480 by {due}.","simple":"Your water bill is INR 480. Pay it by {due}.","amount":"INR 480","if_ignored":"The office may charge a late fee.","actions_required":["Pay INR 480 by {due}."],"documents_to_bring":["This reminder","Your latest water bill"]},
+    "Hindi": {"document_type":"पानी के बिल की याद दिलाने वाला पत्र","explanation":"यह पत्र याद दिलाता है कि पानी का ₹480 का बिल {due} तक चुकाना है।","simple":"पानी का बिल ₹480 है। इसे {due} तक चुकाएँ।","amount":"₹480","if_ignored":"देर से भुगतान करने पर शुल्क लग सकता है।","actions_required":["{due} तक ₹480 चुकाएँ।"],"documents_to_bring":["यह पत्र","पानी का सबसे नया बिल"]},
+    "Tamil": {"document_type":"குடிநீர் கட்டண நினைவூட்டல்","explanation":"குடிநீர் கட்டணம் ₹480-ஐ {due}க்குள் செலுத்த இந்தக் கடிதம் நினைவூட்டுகிறது.","simple":"குடிநீர் கட்டணம் ₹480. {due}க்குள் செலுத்துங்கள்.","amount":"₹480","if_ignored":"தாமதக் கட்டணம் விதிக்கப்படலாம்.","actions_required":["₹480-ஐ {due}க்குள் செலுத்துங்கள்."],"documents_to_bring":["இந்தக் கடிதம்","சமீபத்திய குடிநீர் கட்டணச் சீட்டு"]}
+  }
+}
