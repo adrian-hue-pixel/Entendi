@@ -1,6 +1,7 @@
 """Entendi's six Streamlit pages."""
 
 from datetime import date, datetime
+from hashlib import sha256
 import json
 import os
 from urllib.parse import quote
@@ -11,7 +12,8 @@ import streamlit as st
 
 import benefits
 import letter_data as data
-from letter_reader import LANGUAGES, SAMPLES, LetterError, Notice, explain_letter, prepare_image, sample_letter
+from letter_reader import (LANGUAGES, SAMPLES, LetterError, Notice, explain_letter, prepare_image,
+                           sample_letter, speech_engine, speech_wav)
 import ui
 
 PAGES = {
@@ -172,8 +174,22 @@ def understand() -> None:
         _letter_input()
 
 
-def _speak(notice: Notice) -> None:
+def _speak(notice: Notice, key: str) -> None:
     sentence = " ".join((notice.explanation, *notice.actions_required, *notice.documents_to_bring))
+    if engine := speech_engine():
+        audio_id = sha256(f"{notice.language}\0{sentence}".encode()).hexdigest()
+        requested = st.button("Listen", key=f"listen_{key}")
+        if requested:
+            try:
+                audio = speech_wav(sentence, notice.language, engine)
+            except LetterError as exc:
+                st.error(str(exc))
+            else:
+                st.session_state["letter_audio"] = (audio_id, audio)
+        cached = st.session_state.get("letter_audio")
+        if cached and cached[0] == audio_id:
+            st.audio(cached[1], format="audio/wav", autoplay=requested)
+        return
     config = json.dumps({"text": sentence, "lang": LANGUAGES.get(notice.language, "en-IN")},
                         ensure_ascii=True).replace("<", "\\u003c")
     st.iframe(f"""<!doctype html><html lang="en"><meta charset="utf-8">
@@ -261,7 +277,7 @@ def letter_result(notice: Notice, entry_id: str, *, current: dict | None = None)
     st.subheader("What this is")
     markup(f'<p class="letter-summary">{ui.esc(notice.explanation)}</p>')
     markup(f'<div class="letter-badges">{ui.badge_html(notice.issuer)}{ui.badge_html(notice.document_type)}</div>')
-    _speak(notice)
+    _speak(notice, prefix)
     facts = [("Do by", notice.deadline.strftime("%d %b %Y") if notice.deadline else "No deadline found",
               data.days_left(notice.deadline, today()) if notice.deadline else "Confirm the date if you’re unsure."),
              ("Amount", notice.amount or "Not stated", "")]

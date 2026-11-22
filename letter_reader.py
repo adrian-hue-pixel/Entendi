@@ -6,15 +6,19 @@ from io import BytesIO
 import json
 from pathlib import Path
 import re
+import shutil
+import subprocess
 import textwrap
 import unicodedata
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
+import wave
 
 from PIL import Image, ImageDraw, ImageFont, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 LANGUAGES = {"English": "en-IN", "Hindi": "hi-IN", "Tamil": "ta-IN"}
+SPEECH_VOICES = {"English": "en", "Hindi": "hi", "Tamil": "ta"}
 SAMPLE_DIR = Path(__file__).with_name("assets") / "samples"
 SAMPLES = {
     "water": "Water bill reminder",
@@ -82,6 +86,28 @@ def prepare_image(raw: bytes) -> bytes:
             return output.getvalue()
     except (UnidentifiedImageError, OSError, Image.DecompressionBombError, SyntaxError) as exc:
         raise LetterError("That photo could not be opened. Try a clear JPG, PNG or WebP.") from exc
+
+
+def speech_engine() -> str | None:
+    return shutil.which("espeak-ng")
+
+
+def speech_wav(text: str, language: str, engine: str) -> bytes:
+    try:
+        speech = subprocess.run(
+            [engine, "-v", SPEECH_VOICES[language], "-s", "145", "--stdin", "--stdout"],
+            input=text[:6500].encode("utf-8"), capture_output=True, check=True, timeout=12,
+        )
+        audio = BytesIO()
+        with wave.open(BytesIO(speech.stdout), "rb") as original, wave.open(audio, "wb") as output:
+            output.setparams(original.getparams())
+            frames = original.readframes(original.getnframes())
+            if not frames:
+                raise wave.Error("No speech generated")
+            output.writeframes(frames)
+        return audio.getvalue()
+    except (OSError, subprocess.SubprocessError, KeyError, EOFError, wave.Error) as exc:
+        raise LetterError("Audio could not start. Try Listen again.") from exc
 
 
 def _normalized(text: str) -> str:

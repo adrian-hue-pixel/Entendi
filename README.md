@@ -34,7 +34,7 @@ The app sends a JPEG as an inline image and reads the JSON response from `choice
 - The current photo and transcription are held temporarily by the Streamlit session so you can compare them with the explanation. Real photos go to the configured reading service. Its handling and retention depend on the provider.
 - My Letters and exports contain the explanation and extracted facts. They omit the photo, original transcription and source excerpts. **My data** can also contain benefits answers and feedback. Keep downloads private.
 - Quote badges indicate a text match against the extracted transcription, not an independent check of the image. Confirm unclear dates and obligations with the issuing office. Entendi does not give legal advice or verify authenticity.
-- **Listen** uses on-device speech synthesis. The device needs a local voice for the explanation language.
+- **Listen** uses offline eSpeak NG on the app server, with no separate audio service. Streamlit Cloud installs it from `packages.txt`. For local setups without eSpeak NG, Listen uses the browser’s on-device voice for the selected language.
 - Calendar downloads use all-day events. WhatsApp opens a draft for you to review and send.
 
 ## Benefits Check
