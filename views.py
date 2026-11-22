@@ -15,7 +15,7 @@ from i18n import LOCAL_NAMES, OWL_HELP, OWL_WELCOME, translate, ui_text as tr
 from owl_audio import pending_phrase
 from trust import display_amount
 import letter_data as data
-from letter_reader import (LANGUAGES, SAMPLES, LetterError, Notice, explain_letter, prepare_image,
+from letter_reader import (LANGUAGES, MAX_IMAGE_BYTES, SAMPLES, LetterError, Notice, explain_letter, prepare_image,
                            sample_letter, speech_engine, speech_wav)
 import ui
 
@@ -174,14 +174,17 @@ def _letter_input() -> None:
     state = st.session_state
     if state.get("letter_input_language") != state.language:
         state.letter_input_language = state.language
-    st.selectbox(tr("Explanation language"), list(LANGUAGES), key="letter_input_language",
-                 on_change=_sync_input_language, format_func=LOCAL_NAMES.__getitem__)
-    with st.container(border=True):
-        mode = st.radio(tr("How would you like to add your letter?"), ("Upload", "Take photo"), horizontal=True, key="letter_input_mode", format_func=lambda value, lang=st.session_state.interface_language: translate(value, lang))
+    with st.container(key="letter_input_card"):
+        st.subheader(tr("Add your letter"))
+        st.selectbox(tr("Explanation language"), list(LANGUAGES), key="letter_input_language",
+                     on_change=_sync_input_language, format_func=LOCAL_NAMES.__getitem__)
+        mode = st.segmented_control(tr("How would you like to add your letter?"), ("Upload", "Take photo"),
+                                    default="Upload", required=True, key="letter_input_mode",
+                                    format_func=lambda value, lang=state.interface_language: translate(value, lang))
         field_key = state.get("input_version", 0)
         if mode == "Upload":
             file = st.file_uploader(tr("Upload a photo of your letter"), type=("jpg", "jpeg", "png", "webp"),
-                                    key=f"letter_upload_{field_key}")
+                                    key=f"letter_upload_{field_key}", max_upload_size=MAX_IMAGE_BYTES // (1024 * 1024))
         else:
             file = st.camera_input(tr("Take a photo of your letter"), key=f"letter_camera_{field_key}")
         st.caption(tr("Lay it flat, use good light, and include all four corners."))
@@ -194,7 +197,8 @@ def _letter_input() -> None:
             else:
                 st.image(photo, caption="Your letter preview", width=440)
         st.caption(tr("Real photos go to the configured reading service for processing. Entendi does not save the photo to My Letters."))
-        if st.button(tr("Explain my letter"), type="primary", disabled=photo is None):
+        if st.button(tr("Explain my letter"), type="primary", disabled=photo is None,
+                     icon=":material/arrow_forward:"):
             state["reading_job"] = {"photo": photo, "language": state.language, "id": uuid4().hex}
             st.rerun()
     with st.expander(tr("Try a sample letter")):
@@ -421,11 +425,20 @@ def my_letters() -> None:
         st.button(tr("Back to My Letters"), on_click=close_letter)
         letter_result(Notice.model_validate_json(entry["details"]), entry["id"])
         return
-    status = st.selectbox(tr("Status"), ("All", "Open", "Done"), key="letter_filter", format_func=lambda value, lang=st.session_state.interface_language: translate(value, lang))
-    letters = [entry for entry in saved_entries("letter") if status == "All" or entry["done"] == (status == "Done")]
+    saved = saved_entries("letter")
+    if not saved:
+        with st.container(key="letter_empty"):
+            markup(ui.empty_html(tr("No letters here yet"),
+                                 tr("Save a letter’s explanation to find it here later."), "letters"))
+            st.button(tr("Understand a Letter"), type="primary", icon=":material/arrow_forward:",
+                      on_click=go, args=("understand",))
+        return
+    status = st.segmented_control(tr("Status"), ("All", "Open", "Done"), default="All", required=True,
+                                  key="letter_filter", format_func=lambda value, lang=st.session_state.interface_language: translate(value, lang))
+    letters = [entry for entry in saved if status == "All" or entry["done"] == (status == "Done")]
     if not letters:
-        markup(ui.empty_html(tr("No letters here yet"), "Save a letter’s explanation to find it here later."))
-        st.button(tr("Understand a Letter"), on_click=go, args=("understand",))
+        with st.container(key="letter_empty"):
+            markup(ui.empty_html(tr("No letters match this status"), tr("Choose another status to see your letters."), "letters"))
     for entry in letters:
         notice = Notice.model_validate_json(entry["details"])
         with st.container(border=True):
@@ -451,12 +464,18 @@ def deadlines() -> None:
     page_header("deadlines")
     groups = data.deadline_groups(saved_entries(), today())
     events = [(day, entry["title"], entry["id"]) for group, pairs in groups.items() if group != "Done" for day, entry in pairs]
-    st.download_button(tr("Download all (.ics)"), data.make_calendar(events), file_name="entendi-deadlines.ics",
-                       mime="text/calendar", disabled=not events, on_click="ignore")
+    if events:
+        st.download_button(tr("Download all (.ics)"), data.make_calendar(events), file_name="entendi-deadlines.ics",
+                           mime="text/calendar", on_click="ignore", icon=":material/download:")
+    if not any(groups.values()):
+        with st.container(key="deadline_empty"):
+            markup(ui.empty_html(tr("No deadlines yet"),
+                                 tr("Deadlines from saved letters appear here. You can also add a reminder below."),
+                                 "deadlines"))
     for group, rows in groups.items():
-        markup(ui.group_heading(tr(group)))
         if not rows:
-            st.caption(tr("No deadlines here."))
+            continue
+        markup(ui.group_heading(tr(group)))
         for due, entry in rows:
             with st.container(border=True):
                 key = entry["id"]
@@ -487,13 +506,19 @@ def deadlines() -> None:
 
 def benefits_check() -> None:
     page_header("benefits")
-    st.info(tr("This check uses fixed rules, not AI. It covers two NHS age and education routes in England. "
-            "The official service makes the final decision."))
     preferences = st.session_state.entendi_data["profile"]
     country = benefits_location(preferences.get("country", ""), preferences.get("nation", ""))
     if not country:
-        st.info(tr("Not available for your country yet"))
+        with st.container(key="benefits_empty"):
+            markup(ui.empty_html(tr("Not available for your country yet"),
+                                 tr("Entendi currently checks two NHS eligibility routes in England."), "benefits"))
+            if st.button(tr("Country and language"), key="benefit_preferences", icon=":material/language:"):
+                st.session_state.edit_profile = True
+                st.rerun()
         return
+    with st.container(key="benefit_note"):
+        st.markdown(tr("**NHS eligibility in England**"))
+        st.caption(tr("Checks two age and education routes using fixed rules. The official service makes the final decision."))
     profile = st.session_state.setdefault("benefits_answers", {})
     try:
         default_age = min(125, max(0, int(profile.get("age", "18"))))
@@ -528,15 +553,16 @@ def help_about() -> None:
     page_header("help")
     st.subheader(tr("How it works"))
     markup(ui.steps_html(tr))
-    st.subheader(tr("What Entendi can’t do"))
-    st.markdown(tr("- It may misread a blurry photo. Confirm dates, amounts and next steps with the official office.\n"
-                "- It doesn’t give legal advice or decide whether a letter is genuine.\n"
-                "- Benefits Check follows fixed rules. The office makes the final decision."))
-    st.subheader(tr("Privacy"))
-    st.markdown(tr("Entendi keeps the photo temporarily in your session so you can compare it. Real photos are sent to the "
-                "configured reading service for processing. Entendi masks recognised numbers in extracted text before displaying or saving it. Saved letters and downloads omit the photo, full transcription "
-                "and source quotes. My data can contain your explanations and benefits answers, so keep the download private."))
-    st.subheader(tr("Keep an offline copy"))
+    limits, privacy = st.columns(2, gap="small")
+    with limits, st.container(key="help_limits"):
+        st.subheader(tr("What Entendi can’t do"))
+        st.markdown(tr("- Blurry photos can be misread. Confirm important dates, amounts and next steps with the issuing office.\n"
+                       "- Entendi cannot provide legal advice or verify a letter’s authenticity."))
+    with privacy, st.container(key="help_privacy"):
+        st.subheader(tr("Privacy"))
+        st.markdown(tr("Photos stay in the session for comparison and are sent to the configured reading service. "
+                       "Saved letters and downloads omit photos, full transcriptions and quotes. "
+                       "Entendi masks recognised numbers before showing or saving extracted text."))
     paragraphs = ["Entendi · Saved letters", "For important details, check your original letter or ask the official office."]
     for entry in saved_entries("letter"):
         notice = Notice.model_validate_json(entry["details"])
@@ -545,16 +571,21 @@ def help_about() -> None:
             lines.append(f"Do by: {notice.deadline:%d %b %Y}")
         lines.extend(f"• {line}" for line in notice.actions_required)
         paragraphs.append("\n".join(lines))
-    st.download_button(tr("Download offline copy"), "\n\n".join(paragraphs), file_name="entendi-letters.txt",
-                       mime="text/plain", disabled=len(paragraphs) == 2, on_click="ignore")
-    if len(paragraphs) == 2:
-        st.caption(tr("Save a letter first to download an offline copy."))
-    st.subheader(tr("Feedback"))
+    with st.container(key="help_offline"):
+        st.subheader(tr("Keep an offline copy"))
+        if len(paragraphs) == 2:
+            st.caption(tr("Save a letter first to download an offline copy."))
+        else:
+            st.download_button(tr("Download offline copy"), "\n\n".join(paragraphs), file_name="entendi-letters.txt",
+                               mime="text/plain", on_click="ignore", icon=":material/download:")
     with st.form("feedback", clear_on_submit=True):
-        rating = st.radio(tr("Rating"), (1, 2, 3, 4, 5), index=3, horizontal=True)
+        st.subheader(tr("Feedback"))
+        st.caption(tr("Rating"))
+        rating = st.feedback("stars", key="feedback_stars", default=3)
         comment = st.text_area(tr("Comment"), max_chars=500)
-        if st.form_submit_button(tr("Save feedback")):
-            _add_feedback("Feedback", {"rating": rating, "comment": comment.strip()})
+        if st.form_submit_button(tr("Save feedback"), type="primary"):
+            _add_feedback("Feedback", {"rating": rating + 1 if rating is not None else None,
+                                       "comment": comment.strip()})
     st.caption(tr("Built for EvoHacks 2."))
 
 

@@ -153,7 +153,7 @@ footer{visibility:hidden;}
 .pagehead h1{font-size:clamp(1.5rem,3vw,2.05rem);margin:.1rem 0 0;font-weight:800;letter-spacing:-.03em;padding:0;line-height:1.1;animation:blurIn .8s .15s both;}
 .pagehead p{margin:.3rem 0 0;color:var(--muted);font-size:1rem;line-height:1.45;max-width:34rem;animation:riseIn .8s .3s both;}
 .mwrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
-.stApp [class*="st-key-owl_message_"]{position:relative;width:min(100%,31rem);padding:.62rem .88rem;
+.stApp [class*="st-key-owl_message_"]{position:relative;width:fit-content;max-width:min(100%,31rem);padding:.58rem .75rem;
   gap:.45rem;background:var(--card);border:1px solid var(--border)!important;border-radius:15px;}
 .stApp .st-key-owl_message_home{margin:.25rem auto .5rem;}
 .st-key-owl_message_home::before{content:"";position:absolute;top:-6px;left:calc(50% - 5px);width:10px;height:10px;
@@ -202,7 +202,31 @@ footer{visibility:hidden;}
   .welcome-splash{display:none;}
   .stApp:has(.welcome-splash) .st-key-onboarding_form{animation:none!important;}
 }
-.owl-line{font-size:.93rem;margin:0;}
+.stApp .owl-line{font-size:.9rem;margin:0;line-height:1.35;}
+.stApp [data-testid="stCaptionContainer"] p{opacity:1;}
+.stApp [data-baseweb="select"] button{border:0;background:transparent;box-shadow:none;min-height:0;}
+.stApp button[data-testid^="stBaseButton-primary"]:disabled{background:var(--accent-soft)!important;box-shadow:none;}
+.stApp button[data-testid^="stBaseButton-primary"]:disabled *{color:var(--muted)!important;}
+.stApp :is(.st-key-letter_input_card,.st-key-letter_empty,.st-key-deadline_empty,.st-key-benefits_empty,
+              .st-key-help_limits,.st-key-help_privacy,.st-key-help_offline,.st-key-benefit_note){
+  padding:clamp(.95rem,2.4vw,1.45rem);border:1px solid var(--border);border-radius:19px;
+  background:var(--card);box-shadow:var(--shadow);}
+.stApp .st-key-letter_input_card{width:min(100%,49rem);margin:0 auto;gap:.85rem;}
+.stApp .st-key-letter_input_card h3,.stApp :is(.st-key-help_limits,.st-key-help_privacy,.st-key-help_offline) h3{
+  margin:0;padding-top:0;font-size:1.15rem;}
+.st-key-letter_input_card [data-testid="stFileUploaderDropzone"]{background:var(--accent-soft);padding:1rem;}
+.stApp :is(.st-key-letter_empty,.st-key-deadline_empty,.st-key-benefits_empty){gap:.55rem;text-align:center;}
+.stApp :is(.st-key-letter_empty,.st-key-benefits_empty) [data-testid="stButton"]{text-align:center;}
+.entendi-empty{display:grid;justify-items:center;gap:.4rem;color:var(--muted);}
+.entendi-empty b{font-size:1.13rem;color:var(--text);}
+.entendi-empty p{margin:0;max-width:32rem;color:var(--muted);}
+.entendi-empty .ptile{display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:12px;
+  background:var(--accent-soft);color:var(--accent);margin-bottom:.12rem;}
+.stApp .st-key-benefit_note{border-left:3px solid var(--accent);}
+.stApp .steps{margin:.45rem 0 1.15rem;gap:.65rem;}
+.stApp .step{border:1px solid var(--border);border-radius:14px;background:var(--card);padding:.85rem 1rem;}
+.stApp .step::before{display:none;}
+
 .bubble{position:relative;max-width:210px;text-align:center;padding:.5rem .9rem;margin-bottom:.6rem;border-radius:14px;background:var(--card2);border:1px solid var(--border);font-size:.8rem;color:var(--muted);box-shadow:0 1px 2px rgba(41,27,79,.05);animation:pop .7s .6s cubic-bezier(.34,1.56,.64,1) both;}
 .bubble::after{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-5px;width:9px;height:9px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}
 /* ---------- mascot ---------- */
@@ -479,8 +503,9 @@ def badge_html(text: str, kind: str = "") -> str:
     return f"<span class='badge {esc(kind)}'>{esc(text)}</span>"
 
 
-def empty_html(title: str, text: str) -> str:
-    return _min(f"<div class='empty'><b>{esc(title)}</b>{esc(text)}</div>")
+def empty_html(title: str, text: str, page: str) -> str:
+    return (f'<div class="entendi-empty"><span class="ptile">{icon(page)}</span>'
+            f'<b>{esc(title)}</b><p>{esc(text)}</p></div>')
 
 
 def fact_html(label: str, value: str, footnote: str = "") -> str:
