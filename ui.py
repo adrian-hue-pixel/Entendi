@@ -42,15 +42,13 @@ def icon(key: str) -> str:
 _DARK = ("--bg:#0B0C0E;--text:#F5F5F7;--muted:#A1A1A8;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.085);"
          "--border:rgba(255,255,255,.10);--fborder:rgba(255,255,255,.16);--field:rgba(255,255,255,.07);--pop:#17181B;"
          "--side:rgba(14,15,18,.78);--accent:#7BD3A0;--accent-soft:rgba(123,211,160,.16);--btn-text:#06150C;"
-         "--star:#FFFFFF;--star2:rgba(255,255,255,.5);--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 40px rgba(0,0,0,.45);"
-         "--blob1:rgba(123,211,160,.11);--blob2:rgba(110,150,255,.10);--hover:rgba(255,255,255,.07);--twop:.65;"
+         "--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 40px rgba(0,0,0,.45);--hover:rgba(255,255,255,.07);"
          "--warm:#F2B84B;--warm-soft:rgba(242,184,75,.15);--sky:#7FB8F0;--sky-soft:rgba(127,184,240,.15);"
          "--danger:#FF9A7A;--danger-soft:rgba(255,154,122,.14);--good:#7BD3A0;--good-soft:rgba(123,211,160,.14);"
          "--wx:linear-gradient(135deg,rgba(127,184,240,.16),rgba(242,184,75,.12));--head:rgba(255,255,255,.055);")
 _LIGHT = ("--bg:#F3F7F1;--text:#14231A;--muted:#52625A;--card:#FFFFFF;--card2:#FFFFFF;--border:#DDE6D9;--fborder:#BFCDBA;"
           "--field:#FFFFFF;--pop:#FFFFFF;--side:#FFFFFF;--accent:#17734A;--accent-soft:rgba(23,115,74,.10);--btn-text:#FFFFFF;"
-          "--star:#C9A23F;--star2:rgba(201,162,63,.5);--shadow:0 1px 2px rgba(20,50,30,.05),0 10px 28px rgba(20,50,30,.07);"
-          "--blob1:rgba(255,214,120,.38);--blob2:rgba(23,115,74,.13);--hover:rgba(23,115,74,.07);--twop:.0;"
+          "--shadow:0 1px 2px rgba(20,50,30,.05),0 10px 28px rgba(20,50,30,.07);--hover:rgba(23,115,74,.07);"
           "--warm:#9A5B00;--warm-soft:#FFF3DA;--sky:#17619E;--sky-soft:#E7F1FB;--danger:#A8321A;--danger-soft:#FCEBE5;"
           "--good:#17734A;--good-soft:#E5F4EA;"
           "--wx:linear-gradient(135deg,#E6F2FC 0%,#FFF6E0 100%);--head:linear-gradient(135deg,#FFFFFF 0%,#EEF7F0 100%);")
@@ -88,16 +86,31 @@ footer{visibility:hidden;}
 @keyframes grow{to{width:48px}}
 @keyframes fillbar{from{width:0}}
 /* ---------- ambient background ---------- */
-.bg-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
-.blob{position:absolute;width:60vmax;height:60vmax;border-radius:50%;filter:blur(80px);animation:drift 40s ease-in-out infinite alternate;}
-.b1{background:radial-gradient(circle,var(--blob1),transparent 65%);top:-26vmax;right:-18vmax;}
-.b2{background:radial-gradient(circle,var(--blob2),transparent 65%);bottom:-26vmax;left:-18vmax;animation-duration:52s;}
-@keyframes drift{to{transform:translate(-6vmax,5vmax) scale(1.1)}}
+.bg-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;contain:strict;}
+.day-glow{position:absolute;width:80vmax;height:72vmax;animation:day-drift 32s ease-in-out infinite alternate;}
+.day-glow.warm{top:-32vmax;right:-23vmax;background:radial-gradient(ellipse,rgba(255,218,144,.36),transparent 67%);}
+.day-glow.cool{bottom:-33vmax;left:-19vmax;background:radial-gradient(ellipse,rgba(105,177,141,.22),transparent 67%);
+  animation-duration:41s;animation-delay:-17s;}
+@keyframes day-drift{from{transform:translate(1vmax,-1vmax);opacity:.7}to{transform:translate(-5vmax,3vmax);opacity:1}}
 .bg-pattern{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M20 54l25-25 25 25-25 25z' fill='%2317734A'/%3E%3Cpath d='M82 98l13-13 13 13-13 13z' fill='%2317734A'/%3E%3C/svg%3E");}
-.tw{position:absolute;border-radius:50%;background:var(--star);opacity:0;animation:twinkle var(--d) ease-in-out infinite;animation-delay:var(--dl);}
-@keyframes twinkle{0%,100%{opacity:0}50%{opacity:var(--twop)}}
-.shoot{position:absolute;top:var(--t);left:var(--l);width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--star2),var(--star));opacity:0;transform:rotate(145deg);animation:shoot var(--d) linear infinite;animation-delay:var(--dl);}
-@keyframes shoot{0%{opacity:0;transform:rotate(145deg) translateX(0)}2%{opacity:.8}10%{opacity:0;transform:rotate(145deg) translateX(520px)}100%{opacity:0;transform:rotate(145deg) translateX(520px)}}
+.night-sky{background:
+  radial-gradient(ellipse at 82% 24%,rgba(54,78,130,.23),transparent 42%),
+  linear-gradient(151deg,transparent 22%,rgba(55,69,112,.16) 48%,transparent 69%),
+  linear-gradient(180deg,#050815 0%,#090e1d 64%,#111b30 100%);}
+.sky-star{position:absolute;width:var(--size);height:var(--size);border-radius:50%;background:var(--tint);
+  opacity:var(--dim);animation:sky-twinkle var(--period) ease-in-out var(--phase) infinite;}
+.sky-star.bright{box-shadow:0 0 5px 1px var(--tint);}
+@keyframes sky-twinkle{0%,100%{opacity:var(--dim)}32%{opacity:var(--peak)}64%{opacity:var(--dim)}78%{opacity:var(--mid)}}
+.sky-meteor{position:absolute;top:var(--top);left:var(--left);width:clamp(58px,11vw,168px);height:2px;
+  background:linear-gradient(90deg,transparent,#91b6ff66 61%,#eaf5ff);border-radius:50%;opacity:0;
+  animation:sky-meteor 42s linear var(--delay) infinite;}
+.sky-meteor::after{content:"";position:absolute;right:0;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 7px 2px #b8d7ff;}
+@keyframes sky-meteor{
+  0%{opacity:0;transform:rotate(var(--angle)) translateX(0)}
+  .6%{opacity:1}
+  3.6%,100%{opacity:0;transform:rotate(var(--angle)) translateX(min(52vw,650px))}
+}
+@media (prefers-reduced-motion:reduce){.day-glow,.sky-star,.sky-meteor{animation:none!important;}}
 /* ---------- sidebar ---------- */
 [data-testid="stSidebar"]{background:var(--side)!important;backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-right:1px solid var(--border);}
 [data-testid="stSidebar"]>div:first-child{background:transparent!important;}
@@ -307,23 +320,32 @@ def global_css(dark: bool = False, large_text: bool = False, low_data: bool = Fa
 
 
 def background_fx(dark: bool = False, seed: int = 7, low_data: bool = False) -> str:
-    """Light: soft sun-glow and a faint geometric pattern. Dark: aurora, twinkling stars, rare shooting stars. (CSS only.)"""
+    """Render a decorative background with deterministic star positions."""
     if low_data:
         return ""
+    if not dark:
+        return ('<div class="bg-fx" aria-hidden="true"><i class="day-glow warm"></i>'
+                '<i class="day-glow cool"></i><div class="bg-pattern"></div></div>')
+
     rnd = random.Random(seed)
-    parts = ['<div class="bg-fx"><div class="blob b1"></div><div class="blob b2"></div>']
-    if dark:
-        for _ in range(30):
-            s = rnd.choice([1, 1, 1, 2])
-            parts.append(f'<i class="tw" style="left:{rnd.randint(0, 99)}%;top:{rnd.randint(0, 99)}%;width:{s}px;height:{s}px;'
-                         f'--d:{rnd.uniform(4, 9):.1f}s;--dl:-{rnd.uniform(0, 9):.1f}s"></i>')
-        for i in range(4):
-            parts.append(f'<i class="shoot" style="--t:{rnd.randint(-5, 40)}%;--l:{rnd.randint(40, 100)}%;'
-                         f'--d:{rnd.randint(14, 22)}s;--dl:{i * 4.5:.1f}s"></i>')
-    else:
-        parts.append('<div class="bg-pattern"></div>')
+    parts = ['<div class="bg-fx night-sky" aria-hidden="true">']
+    tints = ("#fff8e8", "#d5e5ff", "#f0f5ff")
+    # Faint points follow the diagonal glow, with larger stars spread across the sky.
+    for index in range(136):
+        x = rnd.uniform(0, 100)
+        y = rnd.uniform(0, 100) if index < 108 else max(0, min(100, 77 - .56 * x + rnd.gauss(0, 9)))
+        size = rnd.choices((.8, 1, 1.5, 2.2), weights=(38, 37, 20, 5))[0]
+        peak = rnd.uniform(.49, .83) if size > 1 else rnd.uniform(.24, .61)
+        dim = rnd.uniform(.09, .2)
+        period = rnd.uniform(3.5, 9)
+        glow = " bright" if size > 2 else ""
+        parts.append(f'<i class="sky-star{glow}" style="left:{x:.1f}%;top:{y:.1f}%;--size:{size}px;'
+                     f'--tint:{rnd.choice(tints)};--dim:{dim:.2f};--mid:{(dim + peak) / 2:.2f};'
+                     f'--peak:{peak:.2f};--period:{period:.1f}s;--phase:-{rnd.uniform(0, period):.1f}s"></i>')
+    for top, left, angle, delay in ((20, 18, 25, 4), (38, 66, 151, 18), (11, 43, 32, 32)):
+        parts.append(f'<i class="sky-meteor" style="--top:{top}%;--left:{left}%;--angle:{angle}deg;--delay:{delay}s"></i>')
     parts.append("</div>")
-    return _min("".join(parts))
+    return "".join(parts)
 
 
 def mascot(size: int = 120, mood: str = "happy") -> str:
