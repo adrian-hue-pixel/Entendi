@@ -1,5 +1,8 @@
 """Shared visual components for Entendi."""
+import base64
+from functools import cache
 import html
+from pathlib import Path
 import random
 
 FEATURE_ORDER = ("plan", "issue", "manual", "resources", "workflow")
@@ -153,20 +156,21 @@ footer{visibility:hidden;}
 .bubble{position:relative;max-width:210px;text-align:center;padding:.5rem .9rem;margin-bottom:.6rem;border-radius:14px;background:var(--card2);border:1px solid var(--border);font-size:.8rem;color:var(--muted);box-shadow:0 1px 2px rgba(41,27,79,.05);animation:pop .7s .6s cubic-bezier(.34,1.56,.64,1) both;}
 .bubble::after{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-5px;width:9px;height:9px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}
 /* ---------- mascot ---------- */
-.entendi-mascot{overflow:visible;cursor:pointer;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
+.entendi-mascot{position:relative;display:inline-block;flex:none;vertical-align:middle;overflow:visible;transition:transform .5s cubic-bezier(.34,1.56,.64,1);}
 .entendi-mascot:hover{transform:scale(1.08) rotate(-3deg);}
-.nbob{animation:bob 4.5s ease-in-out infinite;transform-origin:60px 110px;}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-.nshadow{animation:shad 4.5s ease-in-out infinite;transform-origin:60px 122px;}
-@keyframes shad{0%,100%{transform:scale(1);opacity:.22}50%{transform:scale(.88);opacity:.12}}
-.nshapeL,.nshapeR{transform-box:fill-box;transform-origin:50% 100%;animation:sway 4s ease-in-out infinite;}
-.nshapeR{animation-delay:-2s;}
-@keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(6deg)}}
-.neyes{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite;}
-@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
-.narm{transform-box:fill-box;transform-origin:100% 50%;animation:wave 1.1s .9s ease-in-out 3;}
-@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-28deg)}}
-.nspark{animation:twinkle 3s ease-in-out infinite;}
+.owl-body{position:absolute;inset:3% 6% 9%;background:var(--owl-image) center bottom/contain no-repeat;
+  transform-origin:50% 90%;animation:owl-float 4.5s ease-in-out infinite;}
+.owl-shadow{position:absolute;bottom:4%;left:25%;width:50%;height:6%;border-radius:50%;background:var(--accent);
+  opacity:.18;animation:owl-shadow 4.5s ease-in-out infinite;}
+.owl-spark{position:absolute;width:9%;height:9%;display:grid;place-items:center;color:var(--accent);
+  opacity:.65;animation:owl-sparkle 3s ease-in-out infinite;}
+.owl-spark::before{content:"";width:70%;aspect-ratio:1;background:currentColor;
+  clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);}
+.owl-spark.left{top:26%;left:0;animation-delay:-1.5s;}
+.owl-spark.right{top:15%;right:0;}
+@keyframes owl-float{0%,100%{transform:none}50%{transform:translateY(-5%) rotate(2.5deg)}}
+@keyframes owl-shadow{0%,100%{transform:scale(1);opacity:.2}50%{transform:scale(.84);opacity:.11}}
+@keyframes owl-sparkle{0%,100%{opacity:.3;transform:scale(.75)}50%{opacity:.85;transform:scale(1.12)}}
 /* ---------- cards ---------- */
 [class*="fcard_"]{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--border);border-radius:22px;padding:1.3rem 1.3rem .9rem;box-shadow:var(--shadow);transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s;animation:flipUp .9s cubic-bezier(.2,.8,.2,1) both;}
 [class*="fcard_"]::after{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at 80% -10%,var(--accent-soft),transparent 60%);opacity:0;transition:opacity .4s;pointer-events:none;}
@@ -304,7 +308,7 @@ _LIGHT_ONLY = """
 _LARGE = (".stApp{font-size:1.18rem;}.stApp p,.stApp li,.stApp label,.stApp input,.stApp textarea,.stApp [data-baseweb=\"select\"] *,"
           ".stApp button,.stApp [data-testid=\"stMarkdownContainer\"] p{font-size:1.18rem!important;}"
           ".stApp [data-testid=\"stWidgetLabel\"] p{font-size:1.1rem!important;}.stApp button{min-height:3.2rem;}")
-_LOW_DATA = ("*{animation:none!important;transition:none!important;}.ico *{stroke-dashoffset:0!important;}"
+_LOW_DATA = ("*,*::before,*::after{animation:none!important;transition:none!important;}.ico *{stroke-dashoffset:0!important;}"
              ".cnt{counter-reset:none;}.stApp *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important;}"
              "[class*=\"fcard_\"],[class*=\"st-key-sec_\"],.pagehead,.wx-day{opacity:1!important;}.gt{animation:none!important;}")
 
@@ -312,6 +316,12 @@ _LOW_DATA = ("*{animation:none!important;transition:none!important;}.ico *{strok
 def _min(s: str) -> str:
     """Collapse whitespace so Streamlit's Markdown parser never mistakes our HTML for a code block."""
     return " ".join(s.split())
+
+
+@cache
+def _owl_image() -> str:
+    asset = Path(__file__).with_name("assets") / "amethyst-owl.webp"
+    return base64.b64encode(asset.read_bytes()).decode("ascii")
 
 
 def global_css(dark: bool = False, large_text: bool = False, low_data: bool = False) -> str:
@@ -325,7 +335,8 @@ def global_css(dark: bool = False, large_text: bool = False, low_data: bool = Fa
         extra.append(_LARGE)
     if low_data:
         extra.append(_LOW_DATA)
-    root = f".stApp{{{_DARK if dark else _LIGHT}color-scheme:{'dark' if dark else 'light'};}}"
+    root = (f".stApp{{{_DARK if dark else _LIGHT}color-scheme:{'dark' if dark else 'light'};"
+            f'--owl-image:url("data:image/webp;base64,{_owl_image()}");}}')
     font = "" if low_data else _FONT_IMPORT   # low-data mode downloads no web font
     return f"<style>{_min(font + root + _CSS + ''.join(extra))}</style>"
 
@@ -373,28 +384,12 @@ def background_fx(dark: bool = False, seed: int = 7, low_data: bool = False) -> 
     return "".join(parts)
 
 
-def mascot(size: int = 120, mood: str = "happy") -> str:
-    """Animated Entendi mascot."""
-    py = 71 if mood == "think" else 75
-    mouth = ('<ellipse cx="60" cy="93" rx="3.5" ry="4.5" fill="#21163D"/>' if mood == "think"
-             else '<path d="M50 90 Q60 99 70 90" stroke="#21163D" stroke-width="3" fill="none" stroke-linecap="round"/>')
-    return _min(f"""<svg class="entendi-mascot" viewBox="0 0 120 130" width="{size}" height="{int(size * 130 / 120)}" xmlns="http://www.w3.org/2000/svg">
-<defs><radialGradient id="nb" cx="36%" cy="26%"><stop offset="0" stop-color="#F3EBFF"/><stop offset=".55" stop-color="#B2A0F0"/><stop offset="1" stop-color="#7660BD"/></radialGradient>
-<linearGradient id="nl" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#7156B8"/><stop offset="1" stop-color="#E1C5F5"/></linearGradient></defs>
-<ellipse class="nshadow" cx="60" cy="122" rx="28" ry="4.5" fill="#000"/>
-<g class="nbob"><g class="nshapeL"><path d="M57 37l-17-6-5-17 17 6z" fill="url(#nl)"/></g>
-<g class="nshapeR"><path d="M63 37l17-6 5-17-17 6z" fill="url(#nl)"/></g>
-
-<g class="narm"><ellipse cx="101" cy="86" rx="9" ry="5.5" fill="#9A82D8" transform="rotate(-20 101 86)"/></g>
-<ellipse cx="19" cy="88" rx="9" ry="5.5" fill="#9A82D8" transform="rotate(20 19 88)"/>
-<circle cx="60" cy="80" r="37" fill="url(#nb)"/>
-<path d="M30 92 A37 37 0 0 0 90 98" stroke="#503B8F" stroke-opacity=".25" stroke-width="6" fill="none" stroke-linecap="round"/>
-<ellipse cx="46" cy="59" rx="12" ry="6.5" fill="#fff" opacity=".4" transform="rotate(-25 46 59)"/>
-<g class="neyes"><ellipse cx="47" cy="{py}" rx="4.2" ry="5.6" fill="#21163D"/><ellipse cx="73" cy="{py}" rx="4.2" ry="5.6" fill="#21163D"/>
-<circle cx="48.4" cy="{py - 2}" r="1.4" fill="#fff"/><circle cx="74.4" cy="{py - 2}" r="1.4" fill="#fff"/></g>
-<circle cx="36" cy="88" r="5.5" fill="#F4A7A0" opacity=".4"/><circle cx="84" cy="88" r="5.5" fill="#F4A7A0" opacity=".4"/>
-{mouth}</g><path class="nspark" d="M104 28v8M100 32h8" stroke="#B2A0F0" stroke-width="2" stroke-linecap="round"/>
-<path class="nspark" style="animation-delay:-1.5s" d="M14 38v6M11 41h6" stroke="#B2A0F0" stroke-width="2" stroke-linecap="round"/></svg>""")
+def mascot(size: int = 120) -> str:
+    """Display the amethyst owl in the existing mascot space."""
+    sparks = '<i class="owl-spark left"></i><i class="owl-spark right"></i>' if size >= 72 else ""
+    return (f'<span class="entendi-mascot" role="img" aria-label="Amethyst owl mascot" '
+            f'style="width:{size}px;height:{round(size * 130 / 120)}px">'
+            f'<i class="owl-shadow"></i><i class="owl-body"></i>{sparks}</span>')
 
 
 def hero_html() -> str:
