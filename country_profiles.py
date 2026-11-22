@@ -9,7 +9,7 @@ OTHER = """Angola|Argentina|Australia|Bolivia|Brazil|Cameroon|Canada|Cape Verde|
 COUNTRIES = tuple(sorted(set((EUROPE + "|" + ASIA + "|" + OTHER).split("|")), key=str.casefold)) + ("Other",)
 
 _BY_LANGUAGE = {
-    "English": "United Kingdom|Ireland|Malta|Singapore|Philippines|Hong Kong|United States|Canada|Australia|New Zealand",
+    "English": "United Kingdom|Ireland|Malta|Singapore|Philippines|Hong Kong|United States|Canada|Australia|New Zealand|India",
     "Spanish": "Spain|Mexico|Colombia|Argentina|Peru|Chile|Venezuela|Ecuador|Guatemala|Cuba|Bolivia|Dominican Republic|Honduras|Paraguay|El Salvador|Nicaragua|Costa Rica|Panama|Uruguay|Equatorial Guinea",
     "French": "France|Belgium|Switzerland|Luxembourg|Monaco|Canada|Haiti|DR Congo|Senegal|Ivory Coast|Cameroon|Madagascar",
     "German": "Germany|Austria|Switzerland|Liechtenstein|Luxembourg|Belgium",
@@ -18,7 +18,7 @@ _BY_LANGUAGE = {
     "Russian": "Russia|Belarus|Kazakhstan|Kyrgyzstan", "Polish": "Poland",
     "Dutch": "Netherlands|Belgium|Suriname", "Turkish": "Turkey|Cyprus",
     "Chinese (Simplified)": "China|Singapore", "Japanese": "Japan", "Korean": "South Korea",
-    "Vietnamese": "Vietnam", "Indonesian": "Indonesia", "Thai": "Thailand",
+    "Vietnamese": "Vietnam", "Indonesian": "Indonesia", "Thai": "Thailand", "Hindi": "India",
 }
 COUNTRIES = tuple(sorted(set(COUNTRIES[:-1]) | {"Mozambique"}, key=str.casefold)) + ("Other",)
 

@@ -193,9 +193,9 @@ def _letter_input() -> None:
             try:
                 photo = prepare_image(file.getvalue())
             except LetterError as exc:
-                st.error(str(exc))
+                st.error(tr(str(exc)))
             else:
-                st.image(photo, caption="Your letter preview", width=440)
+                st.image(photo, caption=tr("Your letter preview"), width=440)
         st.caption(tr("Real photos go to the configured reading service for processing. Entendi does not save the photo to My Letters."))
         if st.button(tr("Explain my letter"), type="primary", disabled=photo is None,
                      icon=":material/arrow_forward:"):
@@ -203,7 +203,7 @@ def _letter_input() -> None:
             st.rerun()
     with st.expander(tr("Try a sample letter")):
         for sample, label in SAMPLES.items():
-            st.button(label, key=f"sample_{sample}", on_click=start_letter, args=(sample,))
+            st.button(tr(label), key=f"sample_{sample}", on_click=start_letter, args=(sample,))
 
 
 def understand() -> None:
@@ -211,7 +211,7 @@ def understand() -> None:
     if "reading_job" in st.session_state:
         _run_reading()
     if error := st.session_state.pop("letter_error", None):
-        st.error(error)
+        st.error(tr(error))
     if current := st.session_state.get("current_letter"):
         st.button(tr("Read another letter"), on_click=start_letter)
         letter_result(current["notice"], current["id"], current=current)

@@ -23,7 +23,7 @@ LANGUAGES = {
     "Portuguese": "pt-PT", "Italian": "it-IT", "Russian": "ru-RU", "Polish": "pl-PL",
     "Dutch": "nl-NL", "Turkish": "tr-TR", "Chinese (Simplified)": "zh-CN",
     "Japanese": "ja-JP", "Korean": "ko-KR", "Vietnamese": "vi-VN",
-    "Indonesian": "id-ID", "Thai": "th-TH",
+    "Indonesian": "id-ID", "Thai": "th-TH", "Hindi": "hi-IN",
 }
 SPEECH_VOICES = {language: locale.split("-")[0] for language, locale in LANGUAGES.items()}
 SAMPLE_DIR = Path(__file__).with_name("assets") / "samples"

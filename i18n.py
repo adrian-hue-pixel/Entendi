@@ -12,6 +12,7 @@ LOCALES = Path(__file__).with_name("locales")
 LOCAL_NAMES = dict(zip(LANGUAGES, (
     "English", "Español", "Français", "Deutsch", "Português", "Italiano", "Русский",
     "Polski", "Nederlands", "Türkçe", "简体中文", "日本語", "한국어", "Tiếng Việt", "Bahasa Indonesia", "ไทย",
+    "हिन्दी",
 )))
 OWL_WELCOME = "Welcome to Entendi."
 OWL_HELP = "I’ll help you read your letter, one step at a time."

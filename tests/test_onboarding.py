@@ -15,6 +15,7 @@ class OnboardingTests(unittest.TestCase):
         self.assertEqual(set(local_languages("Switzerland")), {"French", "German", "Italian"})
         self.assertEqual(set(local_languages("Belgium")), {"French", "German", "Dutch"})
         self.assertEqual(set(local_languages("Singapore")), {"English", "Chinese (Simplified)"})
+        self.assertEqual(set(local_languages("India")), {"English", "Hindi"})
         for country in ("Ukraine", "Greece", "Sweden", "Malaysia", "Taiwan", "Macau"):
             self.assertIn(country, COUNTRIES)
             self.assertEqual(local_languages(country), ("English",))
@@ -33,7 +34,8 @@ class OnboardingTests(unittest.TestCase):
         self.assertIsNone(benefits_location("United Kingdom", "Scotland"))
 
     def test_bilingual_catalogues_have_fixed_phrases_and_status(self):
-        self.assertEqual(len(LOCAL_NAMES), 16)
+        self.assertEqual(set(LOCAL_NAMES), set(LANGUAGES))
+        self.assertEqual(LOCAL_NAMES["Hindi"], "हिन्दी")
         for language in LANGUAGES:
             self.assertTrue(catalogue(language)["owl_review"])
             for phrase in (OWL_WELCOME, OWL_HELP, "Listen", "Continue"):

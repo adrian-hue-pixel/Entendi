@@ -1,6 +1,6 @@
 # Entendi
 
-Entendi turns a photo of an official letter into a plain-language explanation in 16 languages across Europe and Asia. See what the letter asks, find the supporting words, and save dates to your phone calendar. Built for EvoHacks 2.
+Entendi turns a photo of an official letter into a plain-language explanation in 17 languages across Europe and Asia, including Hindi. See what the letter asks, find the supporting words, and save dates to your phone calendar. Built for EvoHacks 2.
 
 ## Try it
 
@@ -41,7 +41,7 @@ Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in 
 | `LETTER_API_MODEL` | A vision-capable model ID supported by that endpoint |
 | `LETTER_API_KEY` | Bearer token if the endpoint requires one |
 
-Choose any of the 16 output languages. A vision provider can accept other source languages, but the local verifier only confirms supported date and amount formats. The app sends a JPEG as an inline image and reads the JSON response from `choices[0].message.content`. Choose an endpoint that supports the [chat-completions image format](https://developers.openai.com/api/reference/resources/chat). No provider is configured by default. Keep credentials out of Git.
+Choose any of the 17 output languages. A vision provider can accept other source languages, but the local verifier only confirms supported date and amount formats. The app sends a JPEG as an inline image and reads the JSON response from `choices[0].message.content`. Choose an endpoint that supports the [chat-completions image format](https://developers.openai.com/api/reference/resources/chat). No provider is configured by default. Keep credentials out of Git.
 
 ## Letters, privacy, and deadlines
 
