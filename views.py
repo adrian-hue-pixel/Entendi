@@ -1,12 +1,11 @@
 """Entendi's six Streamlit pages."""
 
-from datetime import date, datetime
+from datetime import date
 from hashlib import sha256
 import json
 import os
 from urllib.parse import quote
 from uuid import uuid4
-from zoneinfo import ZoneInfo
 
 import streamlit as st
 
@@ -21,18 +20,18 @@ PAGES = {
     "understand": ("Understand a Letter", "Read an official letter in the language you choose."),
     "letters": ("My Letters", "Open saved explanations and see what still needs your attention."),
     "deadlines": ("Deadlines", "See what is due and add a reminder to your phone."),
-    "benefits": ("Benefits Check", "Check the basic rules for selected central schemes in India."),
+    "benefits": ("Benefits Check", "Check selected NHS eligibility routes for England."),
     "help": ("Help & About", "How Entendi works, privacy, and feedback."),
 }
 FEATURES = {
     "understand": "Upload or photograph a letter and see what it asks you to do.",
     "deadlines": "Keep due dates together and add them to your phone calendar.",
-    "benefits": "See which of three Indian government schemes you may qualify for.",
+    "benefits": "Check two NHS benefits in England and see which rule applies.",
 }
 
 
 def today() -> date:
-    return datetime.now(ZoneInfo("Asia/Kolkata")).date()
+    return date.today()
 
 
 def go(page: str) -> None:
@@ -190,7 +189,7 @@ def _speak(notice: Notice, key: str) -> None:
         if cached and cached[0] == audio_id:
             st.audio(cached[1], format="audio/wav", autoplay=requested)
         return
-    config = json.dumps({"text": sentence, "lang": LANGUAGES.get(notice.language, "en-IN")},
+    config = json.dumps({"text": sentence, "lang": LANGUAGES.get(notice.language, "en-GB")},
                         ensure_ascii=True).replace("<", "\\u003c")
     st.iframe(f"""<!doctype html><html lang="en"><meta charset="utf-8">
     <style>
@@ -274,6 +273,15 @@ def letter_result(notice: Notice, entry_id: str, *, current: dict | None = None)
                 st.text(f"• {text}")
     else:
         markup(ui.badge_html("Read clearly", "quiet"))
+    with st.expander("How Entendi checks this letter"):
+        st.write(f"**Deadline:** {notice.deadline_check} · **Amount:** {notice.amount_check} · "
+                 f"**Round-trip translation:** {notice.translation_check}")
+        st.caption("Date and amount patterns check the values against the printed excerpts read by the model. "
+                   "This can catch a swapped day and month, a dropped decimal, or the wrong currency. "
+                   "Ambiguous dates and unconfirmed amounts are left out.")
+        st.caption("For a translated letter, a second request translates the explanation back into English. "
+                   "Entendi checks for changed dates, amounts, negation and wording. A match cannot guarantee accuracy. "
+                   "Both checks depend on what the model could read from the photo.")
     st.subheader("What this is")
     markup(f'<p class="letter-summary">{ui.esc(notice.explanation)}</p>')
     markup(f'<div class="letter-badges">{ui.badge_html(notice.issuer)}{ui.badge_html(notice.document_type)}</div>')
@@ -435,66 +443,44 @@ def deadlines() -> None:
                     st.rerun()
 
 
-def _selection(field: str, label: str, options: tuple[str, ...], profile: dict) -> str:
-    existing = profile.get(field)
-    return st.selectbox(label, options, index=options.index(existing) if existing in options else 0)
-
-
-def _number(profile: dict, field: str, default: int, maximum: int) -> int:
-    try:
-        return max(0, min(int(profile.get(field, default)), maximum))
-    except ValueError:
-        return default
-
-
 def benefits_check() -> None:
     page_header("benefits")
-    st.info("This check uses fixed rules, not AI. It covers three central schemes in India. The office makes the final decision.")
+    st.info("This check uses fixed rules, not AI. It covers two NHS age and education routes in England. "
+            "The official service makes the final decision.")
     profile = st.session_state.entendi_data["profile"]
-    unknown = ("Not sure", "Yes", "No")
-    with st.form("eligibility"):
-        first, second = st.columns(2)
-        with first:
-            age = st.number_input("Age", min_value=0, max_value=125, value=_number(profile, "age", 18, 125))
-            income = st.number_input("Annual income (₹)", min_value=0, max_value=100_000_000,
-                                     value=_number(profile, "income", 0, 100_000_000), step=1000)
-            occupation = _selection("occupation", "Occupation",
-                                    ("Select occupation", "Unorganised worker", "Salaried worker", "Student", "Retired", "Other"),
-                                    profile)
-        with second:
-            state = _selection("state", "State or union territory", ("Select state", *benefits.STATES), profile)
-            bpl = _selection("bpl", "Listed below the poverty line (BPL)?", unknown, profile)
-            gender = _selection("gender", "Gender", ("Prefer not to say", "Woman", "Man", "Another gender"), profile)
-        with st.expander("More details for pension checks"):
-            widowed = _selection("widowed", "Are you widowed?", unknown, profile)
-            monthly_income = _selection("monthly_income", "Usual monthly income",
-                                        ("Not sure", "₹15,000 or less", "Above ₹15,000"), profile)
-            excluded = _selection("pension_exclusion", "Covered by NPS, ESIC or EPFO, or pay income tax?", unknown, profile)
-        submitted = st.form_submit_button("Check my benefits", type="primary")
-        if submitted:
-            if state == "Select state" or occupation == "Select occupation":
-                st.warning("Choose a state or union territory and an occupation to run the check.")
-            else:
-                profile.update(age=str(age), state=state, income=str(income), occupation=occupation, bpl=bpl, gender=gender,
-                               widowed=widowed, pension_exclusion=excluded, monthly_income=monthly_income)
-    if not data.PROFILE_FIELDS <= profile.keys() or profile["state"] not in benefits.STATES:
+    selected = profile.get("country", benefits.COUNTRIES[0])
+    country = st.selectbox("Country", benefits.COUNTRIES,
+                           index=benefits.COUNTRIES.index(selected) if selected in benefits.COUNTRIES else 0)
+    if country not in benefits.RULES:
+        st.info(f"{country}: coming soon. England is the only verified location in this release.")
         return
     try:
-        schemes = benefits.check(profile)
+        default_age = min(125, max(0, int(profile.get("age", "18"))))
     except ValueError:
-        st.warning("Some saved answers are invalid. Check the form and submit it again.")
+        default_age = 18
+    with st.form("eligibility"):
+        age = st.number_input("Age", min_value=0, max_value=125, value=default_age)
+        studying = st.checkbox("In full-time education", value=profile.get("education") == "yes")
+        if st.form_submit_button("Check my benefits", type="primary"):
+            profile.update(country=country, age=str(age), education="yes" if studying else "no")
+    if profile.get("country") != country:
         return
-    st.caption("A ‘Not likely’ result can also mean an answer is missing or uncertain. The PM-SYM rule uses monthly income.")
+    try:
+        schemes = benefits.check(country, int(profile["age"]), profile.get("education") == "yes")
+    except (KeyError, ValueError):
+        return
+    st.caption("Other NHS exemptions can apply even when these age and education rules do not match. "
+               "Check the full criteria on the official site.")
     for index, scheme in enumerate(schemes):
         with st.container(border=True):
             st.subheader(scheme.name)
-            markup(ui.badge_html("Likely" if scheme.likely else "Not likely", "quiet"))
-            st.caption(scheme.criteria)
-            st.markdown("**Documents to bring**")
-            _checklist(scheme.documents, f"scheme_{index}_{scheme.name[:30]}", "")
+            markup(ui.badge_html("Likely" if scheme.likely else "This route did not match", "quiet"))
+            st.text(scheme.explanation)
+            st.markdown("**Evidence to ask about**")
+            _checklist(scheme.documents, f"scheme_{index}", "")
             st.text(scheme.office)
             st.link_button("Official scheme information", scheme.url)
-            st.caption("The office makes the final decision.")
+            st.caption("The official service makes the final decision.")
 
 
 def help_about() -> None:
@@ -507,7 +493,7 @@ def help_about() -> None:
                 "- Benefits Check follows fixed rules. The office makes the final decision.")
     st.subheader("Privacy")
     st.markdown("Entendi keeps the photo temporarily in your session so you can compare it. Real photos are sent to the "
-                "configured reading service for processing. Saved letters and downloads omit the photo, full transcription "
+                "configured reading service for processing. Entendi masks recognised numbers in extracted text before displaying or saving it. Saved letters and downloads omit the photo, full transcription "
                 "and source quotes. My data can contain your explanations and benefits answers, so keep the download private.")
     st.subheader("Keep an offline copy")
     paragraphs = ["Entendi · Saved letters", "For important details, check your original letter or ask the official office."]

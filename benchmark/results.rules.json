@@ -1,0 +1,159 @@
+{
+  "mode": "source-text rules with gold evidence spans",
+  "model": null,
+  "languages": {
+    "en": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    },
+    "es": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    },
+    "fr": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    },
+    "de": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    },
+    "zh": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    },
+    "ja": {
+      "n": 24,
+      "wrong_date_probes": 19,
+      "wrong_date_rejected": 19,
+      "issue_date_probes": 19,
+      "labelled_issue_dates_rejected": 19,
+      "unrelated_date_probes": 19,
+      "unrelated_dates_wrongly_accepted": 19,
+      "amount_probes": 23,
+      "wrong_amount_rejected": 23,
+      "deadline_correct": 23,
+      "amount_correct": 24,
+      "ambiguous_n": 3,
+      "ambiguous_flagged": 3
+    }
+  },
+  "failures": [
+    {
+      "id": "en-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-06-11",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    },
+    {
+      "id": "es-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-03-05",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    },
+    {
+      "id": "fr-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-03-08",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    },
+    {
+      "id": "de-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-03-16",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    },
+    {
+      "id": "zh-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-06-20",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    },
+    {
+      "id": "ja-023",
+      "scenario": "deadline_year_first_slash",
+      "deadline_expected": "2026-10-13",
+      "deadline_predicted": null,
+      "amount_correct": true,
+      "ambiguous_flagged": false,
+      "error": null
+    }
+  ],
+  "roundtrip_logic_probes": {
+    "identical": "passed",
+    "date_shift": "review",
+    "amount_shift": "review",
+    "negation_loss": "review",
+    "wrong_action_same_words": "passed"
+  }
+}

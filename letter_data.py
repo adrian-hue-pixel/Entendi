@@ -5,11 +5,10 @@ import json
 from uuid import uuid4
 
 from letter_reader import Notice
+from trust import redact
 
 RECORD_FIELDS = {"id", "category", "title", "details", "date", "done"}
-PROFILE_FIELDS = {
-    "age", "state", "income", "occupation", "bpl", "gender", "widowed", "pension_exclusion", "monthly_income",
-}
+PROFILE_FIELDS = {"age", "country", "education"}
 
 
 def new_data() -> dict:
@@ -41,13 +40,13 @@ def read_data(raw: bytes) -> dict:
             continue
         if record["category"] == "letter":
             notice = Notice.model_validate_json(record["details"])
-            record = {**record, "details": notice.saved_json()}
+            record = {**record, "title": redact(record["title"]), "details": notice.saved_json()}
         result["records"].append(record)
     return result
 
 
 def add_entry(data: dict, category: str, title: str, details: str, day: date, *, entry_id: str | None = None) -> dict:
-    entry = {"id": entry_id or uuid4().hex, "category": category, "title": title.strip(), "details": details,
+    entry = {"id": entry_id or uuid4().hex, "category": category, "title": redact(title.strip()), "details": details,
              "date": day.isoformat(), "done": False}
     data["records"].insert(0, entry)
     return entry

@@ -1,0 +1,26 @@
+{
+  "England (United Kingdom)": [
+    {
+      "name": "Free NHS prescriptions",
+      "pathways": [
+        {"min": 0, "max": 15, "description": "under 16"},
+        {"min": 16, "max": 18, "education": true, "description": "16–18 and in full-time education"},
+        {"min": 60, "max": 125, "description": "age 60 or over"}
+      ],
+      "documents": ["Proof of age if requested", "Proof of full-time education if claiming at age 16–18"],
+      "office": "Ask your pharmacist. If your date of birth is printed electronically on your prescription, age evidence is not needed.",
+      "url": "https://www.nhsbsa.nhs.uk/help-nhs-prescription-costs/free-nhs-prescriptions"
+    },
+    {
+      "name": "Free NHS sight tests",
+      "pathways": [
+        {"min": 0, "max": 15, "description": "under 16"},
+        {"min": 16, "max": 18, "education": true, "description": "16–18 and in full-time education"},
+        {"min": 60, "max": 125, "description": "age 60 or over"}
+      ],
+      "documents": ["Proof of age if requested", "Proof of full-time education if claiming at age 16–18"],
+      "office": "Tell the optician when you book and ask what evidence to bring.",
+      "url": "https://www.nhs.uk/nhs-services/opticians/free-nhs-eye-tests-and-optical-vouchers/"
+    }
+  ]
+}

@@ -1,12 +1,238 @@
 {
   "issuer": "Maple Ward Water Office",
   "days": 5,
-  "transcription": "Maple Ward Water Office\nWater service payment reminder\nThe amount due is INR 480.\nPay by {due}.\nBring this reminder and your latest bill to the counter.\nIf you miss the deadline, a late fee may apply.\nFictional example. Do not make a payment.",
-  "quotes": ["The amount due is INR 480.", "Pay by {due}.", "If you miss the deadline, a late fee may apply."],
+  "transcription": "Maple Ward Water Office\nWater service payment reminder\nThe amount due is £48.\nPay by {due}.\nBring this reminder and your latest bill to the counter.\nIf you miss the deadline, a late fee may apply.\nFictional example. Do not make a payment.",
+  "quotes": [
+    "The amount due is £48.",
+    "Pay by {due}.",
+    "If you miss the deadline, a late fee may apply."
+  ],
   "deadline_quote": "Pay by {due}.",
   "languages": {
-    "English": {"document_type":"Water bill reminder","explanation":"This letter is a reminder to pay a water bill of INR 480 by {due}.","simple":"Your water bill is INR 480. Pay it by {due}.","amount":"INR 480","if_ignored":"The office may charge a late fee.","actions_required":["Pay INR 480 by {due}."],"documents_to_bring":["This reminder","Your latest water bill"]},
-    "Hindi": {"document_type":"पानी के बिल की याद दिलाने वाला पत्र","explanation":"यह पत्र याद दिलाता है कि पानी का ₹480 का बिल {due} तक चुकाना है।","simple":"पानी का बिल ₹480 है। इसे {due} तक चुकाएँ।","amount":"₹480","if_ignored":"देर से भुगतान करने पर शुल्क लग सकता है।","actions_required":["{due} तक ₹480 चुकाएँ।"],"documents_to_bring":["यह पत्र","पानी का सबसे नया बिल"]},
-    "Tamil": {"document_type":"குடிநீர் கட்டண நினைவூட்டல்","explanation":"குடிநீர் கட்டணம் ₹480-ஐ {due}க்குள் செலுத்த இந்தக் கடிதம் நினைவூட்டுகிறது.","simple":"குடிநீர் கட்டணம் ₹480. {due}க்குள் செலுத்துங்கள்.","amount":"₹480","if_ignored":"தாமதக் கட்டணம் விதிக்கப்படலாம்.","actions_required":["₹480-ஐ {due}க்குள் செலுத்துங்கள்."],"documents_to_bring":["இந்தக் கடிதம்","சமீபத்திய குடிநீர் கட்டணச் சீட்டு"]}
-  }
+    "English": {
+      "document_type": "Water bill reminder",
+      "explanation": "This letter is a reminder to pay a water bill of £48 by {due}.",
+      "simple": "Your water bill is £48. Pay it by {due}.",
+      "amount": "£48",
+      "if_ignored": "The office may charge a late fee.",
+      "actions_required": [
+        "Pay £48 by {due}."
+      ],
+      "documents_to_bring": [
+        "This reminder",
+        "Your latest water bill"
+      ]
+    },
+    "Spanish": {
+      "document_type": "Aviso de factura de agua",
+      "explanation": "Paga £48 por el agua antes del {due}.",
+      "simple": "Paga £48 antes del {due}.",
+      "amount": "£48",
+      "if_ignored": "Puede aplicarse un recargo.",
+      "actions_required": [
+        "Paga £48 antes del {due}."
+      ],
+      "documents_to_bring": [
+        "Este aviso",
+        "La última factura de agua"
+      ]
+    },
+    "French": {
+      "document_type": "Rappel de facture d’eau",
+      "explanation": "Réglez la facture d’eau de £48 avant le {due}.",
+      "simple": "Payez £48 avant le {due}.",
+      "amount": "£48",
+      "if_ignored": "Des frais de retard peuvent s’appliquer.",
+      "actions_required": [
+        "Payez £48 avant le {due}."
+      ],
+      "documents_to_bring": [
+        "Ce rappel",
+        "Dernière facture d’eau"
+      ]
+    },
+    "German": {
+      "document_type": "Erinnerung zur Wasserrechnung",
+      "explanation": "Bezahlen Sie £48 für Wasser bis zum {due}.",
+      "simple": "Zahlen Sie £48 bis zum {due}.",
+      "amount": "£48",
+      "if_ignored": "Eine Mahngebühr ist möglich.",
+      "actions_required": [
+        "Zahlen Sie £48 bis zum {due}."
+      ],
+      "documents_to_bring": [
+        "Diese Erinnerung",
+        "Letzte Wasserrechnung"
+      ]
+    },
+    "Portuguese": {
+      "document_type": "Aviso da conta de água",
+      "explanation": "Pague £48 pela água até {due}.",
+      "simple": "Pague £48 até {due}.",
+      "amount": "£48",
+      "if_ignored": "Pode haver uma taxa por atraso.",
+      "actions_required": [
+        "Pague £48 até {due}."
+      ],
+      "documents_to_bring": [
+        "Este aviso",
+        "Última conta de água"
+      ]
+    },
+    "Italian": {
+      "document_type": "Sollecito della bolletta dell’acqua",
+      "explanation": "Paga £48 per l’acqua entro il {due}.",
+      "simple": "Paga £48 entro il {due}.",
+      "amount": "£48",
+      "if_ignored": "Può essere applicata una penale.",
+      "actions_required": [
+        "Paga £48 entro il {due}."
+      ],
+      "documents_to_bring": [
+        "Questo avviso",
+        "Ultima bolletta dell’acqua"
+      ]
+    },
+    "Russian": {
+      "document_type": "Напоминание об оплате воды",
+      "explanation": "Оплатите счёт за воду на £48 до {due}.",
+      "simple": "Внесите £48 до {due}.",
+      "amount": "£48",
+      "if_ignored": "Возможна доплата за просрочку.",
+      "actions_required": [
+        "Внесите £48 до {due}."
+      ],
+      "documents_to_bring": [
+        "Это напоминание",
+        "Последний счёт за воду"
+      ]
+    },
+    "Polish": {
+      "document_type": "Przypomnienie o rachunku za wodę",
+      "explanation": "Zapłać £48 za wodę do {due}.",
+      "simple": "Zapłać £48 do {due}.",
+      "amount": "£48",
+      "if_ignored": "Może obowiązywać opłata za zwłokę.",
+      "actions_required": [
+        "Zapłać £48 do {due}."
+      ],
+      "documents_to_bring": [
+        "To przypomnienie",
+        "Ostatni rachunek za wodę"
+      ]
+    },
+    "Dutch": {
+      "document_type": "Herinnering waterrekening",
+      "explanation": "Betaal £48 voor water vóór {due}.",
+      "simple": "Betaal £48 vóór {due}.",
+      "amount": "£48",
+      "if_ignored": "Er kunnen kosten bij komen.",
+      "actions_required": [
+        "Betaal £48 vóór {due}."
+      ],
+      "documents_to_bring": [
+        "Deze herinnering",
+        "Laatste waterrekening"
+      ]
+    },
+    "Turkish": {
+      "document_type": "Su faturası hatırlatması",
+      "explanation": "Su faturasını {due} tarihine kadar ödeyin. Tutar £48.",
+      "simple": "{due} tarihine kadar £48 ödeyin.",
+      "amount": "£48",
+      "if_ignored": "Gecikme ücreti alınabilir.",
+      "actions_required": [
+        "{due} tarihine kadar £48 ödeyin."
+      ],
+      "documents_to_bring": [
+        "Bu hatırlatma",
+        "Son su faturası"
+      ]
+    },
+    "Chinese (Simplified)": {
+      "document_type": "水费缴费提醒",
+      "explanation": "请在 {due} 前缴纳 £48 的水费。",
+      "simple": "在 {due} 前缴纳 £48。",
+      "amount": "£48",
+      "if_ignored": "逾期可能产生费用。",
+      "actions_required": [
+        "在 {due} 前缴纳 £48。"
+      ],
+      "documents_to_bring": [
+        "这份提醒",
+        "最新水费账单"
+      ]
+    },
+    "Japanese": {
+      "document_type": "水道料金のお知らせ",
+      "explanation": "{due} までに水道料金 £48 をお支払いください。",
+      "simple": "{due} までに £48 をお支払いください。",
+      "amount": "£48",
+      "if_ignored": "遅延料金がかかる場合があります。",
+      "actions_required": [
+        "{due} までに £48 をお支払いください。"
+      ],
+      "documents_to_bring": [
+        "このお知らせ",
+        "最新の水道料金請求書"
+      ]
+    },
+    "Korean": {
+      "document_type": "수도 요금 납부 안내",
+      "explanation": "{due}까지 수도 요금 £48을 납부하세요.",
+      "simple": "{due}까지 £48을 내세요.",
+      "amount": "£48",
+      "if_ignored": "연체료가 부과될 수 있습니다.",
+      "actions_required": [
+        "{due}까지 £48을 내세요."
+      ],
+      "documents_to_bring": [
+        "이 안내문",
+        "최근 수도 요금 고지서"
+      ]
+    },
+    "Vietnamese": {
+      "document_type": "Nhắc thanh toán tiền nước",
+      "explanation": "Thanh toán £48 tiền nước trước {due}.",
+      "simple": "Trả £48 trước {due}.",
+      "amount": "£48",
+      "if_ignored": "Có thể phải trả phí chậm.",
+      "actions_required": [
+        "Trả £48 trước {due}."
+      ],
+      "documents_to_bring": [
+        "Thông báo này",
+        "Hóa đơn nước gần nhất"
+      ]
+    },
+    "Indonesian": {
+      "document_type": "Pengingat tagihan air",
+      "explanation": "Bayar tagihan air sebesar £48 paling lambat {due}.",
+      "simple": "Bayar £48 sebelum batas {due}.",
+      "amount": "£48",
+      "if_ignored": "Biaya keterlambatan dapat berlaku.",
+      "actions_required": [
+        "Bayar £48 sebelum batas {due}."
+      ],
+      "documents_to_bring": [
+        "Pengingat ini",
+        "Tagihan air terakhir"
+      ]
+    },
+    "Thai": {
+      "document_type": "แจ้งเตือนค่าน้ำ",
+      "explanation": "ชำระค่าน้ำ £48 ภายในวันที่ {due}",
+      "simple": "จ่าย £48 ภายใน {due}",
+      "amount": "£48",
+      "if_ignored": "อาจมีค่าธรรมเนียมล่าช้า",
+      "actions_required": [
+        "จ่าย £48 ภายใน {due}"
+      ],
+      "documents_to_bring": [
+        "หนังสือแจ้งฉบับนี้",
+        "ใบแจ้งค่าน้ำล่าสุด"
+      ]
+    }
+  },
+  "amount_quote": "The amount due is £48."
 }

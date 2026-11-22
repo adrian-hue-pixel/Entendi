@@ -64,13 +64,12 @@ class LetterTests(unittest.TestCase):
         self.assertIn(b"SUMMARY:A\\,B\\;C\\n", calendar)
         self.assertTrue(all(len(line) <= 75 for line in calendar.split(b"\r\n")))
 
-    def test_benefits_prioritize_the_matching_rule(self):
-        profile = {"age": "29", "state": "Tamil Nadu", "bpl": "Yes", "gender": "Woman", "widowed": "No",
-                   "monthly_income": "₹15,000 or less", "pension_exclusion": "No", "occupation": "Unorganised worker"}
-        self.assertIn("Maan-dhan", check(profile)[0].name)
-        self.assertTrue(check(profile)[0].likely)
-        profile["pension_exclusion"] = "Not sure"
-        self.assertFalse(any(scheme.likely for scheme in check(profile)))
+    def test_country_scoped_benefits_match_at_boundaries(self):
+        country = "England (United Kingdom)"
+        self.assertTrue(all(scheme.likely for scheme in check(country, 65, False)))
+        self.assertTrue(all(scheme.likely for scheme in check(country, 18, True)))
+        self.assertFalse(any(scheme.likely for scheme in check(country, 19, True)))
+        self.assertEqual(check("Germany", 65, False), [])
 
 
 if __name__ == "__main__":

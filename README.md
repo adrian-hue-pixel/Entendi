@@ -1,6 +1,6 @@
 # Entendi
 
-Entendi turns a photo of an official letter into a plain-language explanation in English, Hindi or Tamil. See what the letter asks, find the supporting words, and save dates to your phone calendar. Built for EvoHacks 2.
+Entendi turns a photo of an official letter into a plain-language explanation in 16 languages across Europe and Asia. See what the letter asks, find the supporting words, and save dates to your phone calendar. Built for EvoHacks 2.
 
 ## Try it
 
@@ -27,7 +27,7 @@ Copy `.streamlit/secrets.toml.example` to `.streamlit/secrets.toml` and fill in 
 | `LETTER_API_MODEL` | A vision-capable model ID supported by that endpoint |
 | `LETTER_API_KEY` | Bearer token if the endpoint requires one |
 
-The app sends a JPEG as an inline image and reads the JSON response from `choices[0].message.content`. Choose an endpoint that supports the [chat-completions image format](https://developers.openai.com/api/reference/resources/chat). No provider is configured by default. Keep credentials out of Git.
+Choose any of the 16 output languages. A vision provider can accept other source languages, but the local verifier only confirms supported date and amount formats. The app sends a JPEG as an inline image and reads the JSON response from `choices[0].message.content`. Choose an endpoint that supports the [chat-completions image format](https://developers.openai.com/api/reference/resources/chat). No provider is configured by default. Keep credentials out of Git.
 
 ## Letters, privacy, and deadlines
 
@@ -37,9 +37,23 @@ The app sends a JPEG as an inline image and reads the JSON response from `choice
 - **Listen** uses offline eSpeak NG on the app server, with no separate audio service. Streamlit Cloud installs it from `packages.txt`. For local setups without eSpeak NG, Listen uses the browser’s on-device voice for the selected language.
 - Calendar downloads use all-day events. WhatsApp opens a draft for you to review and send.
 
+## Trust and privacy
+
+Before presenting a due date or amount, Entendi verifies that the value agrees with the quoted text. It withholds ambiguous numeric dates unless the letter states an explicit date format. For translated explanations, a separate English back-translation checks for changes to facts and wording. The check can miss genuine errors, especially when the original evidence is wrong.
+
+Entendi masks all but the last four alphanumeric characters in recognized IBANs, phone numbers, emails, card-like digit strings, labelled passport numbers and UK National Insurance numbers. Source photos are temporarily processed in the session and sent to the configured provider. Prices and deadlines should still be confirmed with the issuing office.
+
 ## Benefits Check
 
-Benefits Check uses fixed rules for three selected Indian central schemes. The office makes the final decision. See the [National Social Assistance Programme criteria](https://sansad.in/getFile/lsscommittee/Rural%20Development%20and%20Panchayati%20Raj/17_Rural_Development_and_Panchayati_Raj_29.pdf?source=loksabhadocs) and the Ministry of Labour’s [PM-SYM guidance](https://www.labour.gov.in/static/uploads/2025/07/cdc13db52c1398b561576094a81b7b7d.pdf).
+England (United Kingdom) is the verified location. Benefits Check explains the age and education routes for [free NHS prescriptions](https://www.nhsbsa.nhs.uk/help-nhs-prescription-costs/free-nhs-prescriptions) and [free NHS sight tests](https://www.nhs.uk/nhs-services/opticians/free-nhs-eye-tests-and-optical-vouchers/). Other routes are available through the official sources. Other countries are marked coming soon.
+
+## Benchmark and write-up
+
+- [Synthetic dataset and data dictionary](benchmark/data)
+- [Evaluation instructions](benchmark/README.md) and [measured results](benchmark/results.rules.json)
+- [Research write-up](docs/trust-benchmark.md)
+
+The published results measure **six source languages using text and labelled evidence**. No provider-backed OCR or translation scores are claimed. The code is MIT-licensed and the synthetic dataset is CC0.
 
 ## Tests
 

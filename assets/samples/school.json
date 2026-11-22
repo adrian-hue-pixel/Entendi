@@ -2,10 +2,250 @@
   "issuer": "Cedar Lane School Office",
   "days": null,
   "transcription": "Cedar Lane School Office\nRequest for enrolment documents\nBring a copy of the birth certificate and proof of address.\nSubmit the copies at the school office.\nSubmission deadline: [unclear].\nFictional example. Do not bring real documents.",
-  "quotes": ["Bring a copy of the birth certificate and proof of address.", "Submit the copies at the school office."],
+  "quotes": [
+    "Bring a copy of the birth certificate and proof of address.",
+    "Submit the copies at the school office."
+  ],
   "languages": {
-    "English":{"document_type":"School document request","explanation":"The school asks for two documents for enrolment. The deadline cannot be read.","simple":"Bring two documents to the school office. Ask when they are due.","actions_required":["Submit the copies at the school office."],"documents_to_bring":["Copy of the birth certificate","Proof of address"],"unclear_parts":["The submission deadline is unreadable."]},
-    "Hindi":{"document_type":"स्कूल के दस्तावेज़ों का अनुरोध","explanation":"स्कूल में दाख़िले के लिए दो दस्तावेज़ माँगे गए हैं। अंतिम तारीख़ पढ़ी नहीं जा सकी।","simple":"स्कूल के दफ़्तर में दो दस्तावेज़ दें। अंतिम तारीख़ पूछें।","actions_required":["दस्तावेज़ों की प्रतियाँ स्कूल के दफ़्तर में दें।"],"documents_to_bring":["जन्म प्रमाणपत्र की प्रति","पते का प्रमाण"],"unclear_parts":["दस्तावेज़ जमा करने की अंतिम तारीख़ पढ़ी नहीं जा सकी।"]},
-    "Tamil":{"document_type":"பள்ளி ஆவணக் கோரிக்கை","explanation":"பள்ளிச் சேர்க்கைக்கு இரண்டு ஆவணங்கள் தேவை. கடைசித் தேதியைப் படிக்க முடியவில்லை.","simple":"இரண்டு ஆவணங்களைப் பள்ளி அலுவலகத்தில் கொடுங்கள். கடைசித் தேதியைக் கேளுங்கள்.","actions_required":["ஆவண நகல்களைப் பள்ளி அலுவலகத்தில் கொடுங்கள்."],"documents_to_bring":["பிறப்புச் சான்றிதழ் நகல்","முகவரிச் சான்று"],"unclear_parts":["ஆவணங்களைச் சமர்ப்பிக்கும் கடைசித் தேதியைப் படிக்க முடியவில்லை."]}
+    "English": {
+      "document_type": "School document request",
+      "explanation": "The school asks for two documents for enrolment. The deadline cannot be read.",
+      "simple": "Bring two documents to the school office. Ask when they are due.",
+      "actions_required": [
+        "Submit the copies at the school office."
+      ],
+      "documents_to_bring": [
+        "Copy of the birth certificate",
+        "Proof of address"
+      ],
+      "unclear_parts": [
+        "The submission deadline is unreadable."
+      ]
+    },
+    "Spanish": {
+      "document_type": "Solicitud de documentos escolares",
+      "explanation": "Lleva al colegio los documentos de matrícula. No se lee la fecha límite.",
+      "simple": "Lleva al colegio los documentos de matrícula.",
+      "actions_required": [
+        "Lleva al colegio los documentos de matrícula."
+      ],
+      "documents_to_bring": [
+        "Copia del certificado de nacimiento",
+        "Justificante de domicilio"
+      ],
+      "unclear_parts": [
+        "No se lee la fecha límite."
+      ]
+    },
+    "French": {
+      "document_type": "Demande de documents scolaires",
+      "explanation": "Remettez les documents d’inscription à l’école. La date limite est illisible.",
+      "simple": "Remettez les documents d’inscription à l’école.",
+      "actions_required": [
+        "Remettez les documents d’inscription à l’école."
+      ],
+      "documents_to_bring": [
+        "Copie de l’acte de naissance",
+        "Justificatif de domicile"
+      ],
+      "unclear_parts": [
+        "La date limite est illisible."
+      ]
+    },
+    "German": {
+      "document_type": "Anfrage nach Schulunterlagen",
+      "explanation": "Geben Sie die Unterlagen im Schulbüro ab. Die Frist ist nicht lesbar.",
+      "simple": "Geben Sie die Unterlagen im Schulbüro ab.",
+      "actions_required": [
+        "Geben Sie die Unterlagen im Schulbüro ab."
+      ],
+      "documents_to_bring": [
+        "Kopie der Geburtsurkunde",
+        "Adressnachweis"
+      ],
+      "unclear_parts": [
+        "Die Frist ist nicht lesbar."
+      ]
+    },
+    "Portuguese": {
+      "document_type": "Pedido de documentos escolares",
+      "explanation": "Entregue os documentos na escola. O prazo não está legível.",
+      "simple": "Entregue os documentos na escola.",
+      "actions_required": [
+        "Entregue os documentos na escola."
+      ],
+      "documents_to_bring": [
+        "Cópia da certidão de nascimento",
+        "Comprovativo de morada"
+      ],
+      "unclear_parts": [
+        "O prazo não está legível."
+      ]
+    },
+    "Italian": {
+      "document_type": "Richiesta di documenti scolastici",
+      "explanation": "Porta i documenti alla segreteria della scuola. La scadenza non è leggibile.",
+      "simple": "Porta i documenti alla segreteria della scuola.",
+      "actions_required": [
+        "Porta i documenti alla segreteria della scuola."
+      ],
+      "documents_to_bring": [
+        "Copia del certificato di nascita",
+        "Prova di residenza"
+      ],
+      "unclear_parts": [
+        "La scadenza non è leggibile."
+      ]
+    },
+    "Russian": {
+      "document_type": "Запрос школьных документов",
+      "explanation": "Принесите документы в школьную канцелярию. Срок подачи неразборчив.",
+      "simple": "Принесите документы в школьную канцелярию.",
+      "actions_required": [
+        "Принесите документы в школьную канцелярию."
+      ],
+      "documents_to_bring": [
+        "Копия свидетельства о рождении",
+        "Подтверждение адреса"
+      ],
+      "unclear_parts": [
+        "Срок подачи неразборчив."
+      ]
+    },
+    "Polish": {
+      "document_type": "Prośba o dokumenty szkolne",
+      "explanation": "Złóż dokumenty w sekretariacie szkoły. Termin jest nieczytelny.",
+      "simple": "Złóż dokumenty w sekretariacie szkoły.",
+      "actions_required": [
+        "Złóż dokumenty w sekretariacie szkoły."
+      ],
+      "documents_to_bring": [
+        "Kopia aktu urodzenia",
+        "Potwierdzenie adresu"
+      ],
+      "unclear_parts": [
+        "Termin jest nieczytelny."
+      ]
+    },
+    "Dutch": {
+      "document_type": "Verzoek om schooldocumenten",
+      "explanation": "Lever de documenten in bij de schooladministratie. De uiterste datum is onleesbaar.",
+      "simple": "Lever de documenten in bij de schooladministratie.",
+      "actions_required": [
+        "Lever de documenten in bij de schooladministratie."
+      ],
+      "documents_to_bring": [
+        "Kopie van de geboorteakte",
+        "Adresbewijs"
+      ],
+      "unclear_parts": [
+        "De uiterste datum is onleesbaar."
+      ]
+    },
+    "Turkish": {
+      "document_type": "Okul belgesi talebi",
+      "explanation": "Belgeleri okul idaresine teslim edin. Son tarih okunamıyor.",
+      "simple": "Belgeleri okul idaresine teslim edin.",
+      "actions_required": [
+        "Belgeleri okul idaresine teslim edin."
+      ],
+      "documents_to_bring": [
+        "Doğum belgesi fotokopisi",
+        "Adres belgesi"
+      ],
+      "unclear_parts": [
+        "Son tarih okunamıyor."
+      ]
+    },
+    "Chinese (Simplified)": {
+      "document_type": "学校材料提交要求",
+      "explanation": "请把入学材料交到学校办公室。 无法辨认提交截止日期。",
+      "simple": "请把入学材料交到学校办公室。",
+      "actions_required": [
+        "请把入学材料交到学校办公室。"
+      ],
+      "documents_to_bring": [
+        "出生证明复印件",
+        "地址证明"
+      ],
+      "unclear_parts": [
+        "无法辨认提交截止日期。"
+      ]
+    },
+    "Japanese": {
+      "document_type": "学校への書類提出のお願い",
+      "explanation": "入学書類を学校事務室に提出してください。 提出期限は判読できません。",
+      "simple": "入学書類を学校事務室に提出してください。",
+      "actions_required": [
+        "入学書類を学校事務室に提出してください。"
+      ],
+      "documents_to_bring": [
+        "出生証明書の写し",
+        "住所を証明する書類"
+      ],
+      "unclear_parts": [
+        "提出期限は判読できません。"
+      ]
+    },
+    "Korean": {
+      "document_type": "학교 서류 제출 요청",
+      "explanation": "학교 사무실에 입학 서류를 제출하세요. 제출 기한을 읽을 수 없습니다.",
+      "simple": "학교 사무실에 입학 서류를 제출하세요.",
+      "actions_required": [
+        "학교 사무실에 입학 서류를 제출하세요."
+      ],
+      "documents_to_bring": [
+        "출생 증명서 사본",
+        "주소 증명서"
+      ],
+      "unclear_parts": [
+        "제출 기한을 읽을 수 없습니다."
+      ]
+    },
+    "Vietnamese": {
+      "document_type": "Yêu cầu nộp giấy tờ nhập học",
+      "explanation": "Nộp giấy tờ tại văn phòng trường. Không đọc được hạn nộp.",
+      "simple": "Nộp giấy tờ tại văn phòng trường.",
+      "actions_required": [
+        "Nộp giấy tờ tại văn phòng trường."
+      ],
+      "documents_to_bring": [
+        "Bản sao giấy khai sinh",
+        "Giấy tờ chứng minh địa chỉ"
+      ],
+      "unclear_parts": [
+        "Không đọc được hạn nộp."
+      ]
+    },
+    "Indonesian": {
+      "document_type": "Permintaan dokumen sekolah",
+      "explanation": "Serahkan dokumen pendaftaran ke kantor sekolah. Batas pengumpulan tidak terbaca.",
+      "simple": "Serahkan dokumen pendaftaran ke kantor sekolah.",
+      "actions_required": [
+        "Serahkan dokumen pendaftaran ke kantor sekolah."
+      ],
+      "documents_to_bring": [
+        "Salinan akta kelahiran",
+        "Bukti alamat"
+      ],
+      "unclear_parts": [
+        "Batas pengumpulan tidak terbaca."
+      ]
+    },
+    "Thai": {
+      "document_type": "ขอเอกสารการสมัครเรียน",
+      "explanation": "ส่งเอกสารที่สำนักงานโรงเรียน อ่านวันครบกำหนดไม่ได้",
+      "simple": "ส่งเอกสารที่สำนักงานโรงเรียน",
+      "actions_required": [
+        "ส่งเอกสารที่สำนักงานโรงเรียน"
+      ],
+      "documents_to_bring": [
+        "สำเนาสูติบัตร",
+        "หลักฐานที่อยู่"
+      ],
+      "unclear_parts": [
+        "อ่านวันครบกำหนดไม่ได้"
+      ]
+    }
   }
 }
