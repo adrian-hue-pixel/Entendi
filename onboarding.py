@@ -3,7 +3,7 @@
 import streamlit as st
 
 from country_profiles import COUNTRIES, benefits_location, local_languages
-from i18n import LOCAL_NAMES, OWL_WELCOME, ui_text as tr
+from i18n import LOCAL_NAMES, ui_text as tr
 from letter_reader import LANGUAGES
 import ui
 
@@ -18,9 +18,16 @@ def regional_status(country: str, nation: str) -> str:
     return "Available in England" if benefits_location(country, nation) else "Not available for your country yet"
 
 
-def show(profile: dict, *, editing: bool) -> None:
+def show(profile: dict, *, editing: bool, welcome: bool = False) -> None:
+    if welcome:
+        st.markdown(ui.welcome_intro(), unsafe_allow_html=True)
+    with st.container(key="onboarding_form"):
+        _show_form(profile, editing=editing)
+
+
+def _show_form(profile: dict, *, editing: bool) -> None:
     old_country = profile.get("country")
-    st.markdown(ui.mascot(90), unsafe_allow_html=True)
+    st.markdown(f'<div class="setup-owl">{ui.mascot(86)}</div>', unsafe_allow_html=True)
     st.title(tr("Country and language"))
     st.caption(tr("Country and language are saved in your profile. No email is required."))
     country = st.selectbox(tr("Choose your country"), COUNTRIES,
@@ -43,12 +50,13 @@ def show(profile: dict, *, editing: bool) -> None:
         old = profile.get("nation")
         nation = st.selectbox(tr("Select your UK nation"), UK_NATIONS,
                               index=UK_NATIONS.index(old) if old in UK_NATIONS else 4, key="onboarding_nation")
-    st.subheader(tr("About your choices"))
-    st.write(f"**{tr('Country')}:** {country}" + (f" · {nation}" if nation else ""))
-    if language:
-        st.write(f"**{tr('Interface language')}:** {LOCAL_NAMES[language]}")
-    st.write(f"**{tr('Benefits Check')}:** {tr(regional_status(country, nation))}")
-    if st.button(tr("Continue"), type="primary", disabled=language is None):
+    with st.container(key="setup_summary"):
+        st.subheader(tr("About your choices"))
+        st.write(f"**{tr('Country')}:** {country}" + (f" · {nation}" if nation else ""))
+        if language:
+            st.write(f"**{tr('Interface language')}:** {LOCAL_NAMES[language]}")
+        st.write(f"**{tr('Benefits Check')}:** {tr(regional_status(country, nation))}")
+    if st.button(tr("Continue"), type="primary", disabled=language is None, width="stretch"):
         profile.update(country=country, nation=nation, interface_language=language)
         st.session_state.interface_language = language
         if not editing or not profile.get("explanation_language"):

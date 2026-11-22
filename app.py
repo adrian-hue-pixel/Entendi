@@ -92,4 +92,6 @@ with st.sidebar:
 if ready and not editing:
     views.render(state.page)
 else:
-    onboarding.show(profile, editing=editing)
+    welcome = not ready and not editing and not state.get("welcome_seen", False)
+    state["welcome_seen"] = True
+    onboarding.show(profile, editing=editing, welcome=welcome and not low_data)

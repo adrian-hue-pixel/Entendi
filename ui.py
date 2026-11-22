@@ -156,6 +156,43 @@ footer{visibility:hidden;}
 [class*="st-key-owl_message_"]{position:relative;background:var(--card);border-color:var(--border)!important;border-radius:18px;overflow:visible;}
 [class*="st-key-owl_message_"]::before{content:"";position:absolute;top:-7px;right:3rem;width:12px;height:12px;
   transform:rotate(45deg);background:var(--pop);border-top:1px solid var(--border);border-left:1px solid var(--border);pointer-events:none;}
+/* First-run welcome and the country picker. */
+.welcome-splash{position:fixed;inset:0;z-index:100;display:grid;place-items:center;text-align:center;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 44%,var(--accent-soft),transparent 57%),var(--bg);
+  animation:welcome-fade 2.65s ease both;}
+.welcome-scene{display:grid;justify-items:center;gap:clamp(.75rem,3vh,1.5rem);padding:1.5rem;}
+.welcome-owl{position:relative;width:clamp(145px,25vw,235px);filter:drop-shadow(0 18px 24px var(--accent-soft));}
+.welcome-owl img{display:block;width:100%;animation:welcome-wave .68s ease-in-out .15s 3;transform-origin:47% 76%;}
+.wave-mark{position:absolute;top:4%;right:-3%;width:21%;height:27%;border:2px solid transparent;
+  border-top-color:var(--accent);border-radius:50%;transform:rotate(34deg);
+  animation:welcome-wave-mark .68s ease-out .15s 3 both;}
+.wave-mark-outer{right:-10%;top:-4%;width:27%;height:33%;}
+.welcome-splash .welcome-scene p{margin:0;font-size:clamp(2rem,6vw,4.05rem);font-weight:800;line-height:1.04;
+  letter-spacing:-.055em;color:var(--text);}
+.welcome-splash .welcome-scene p span{color:var(--accent);}
+@keyframes welcome-fade{0%,72%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden}}
+@keyframes welcome-wave{0%,100%{transform:rotate(-4deg)}50%{transform:translateY(-4px) rotate(6deg)}}
+@keyframes welcome-wave-mark{0%,100%{opacity:0;scale:.82}46%{opacity:.9;scale:1}}
+.stApp .st-key-onboarding_form{width:min(100%,36rem);margin:clamp(.45rem,5vh,3.5rem) auto 2rem;
+  padding:clamp(1.25rem,4vw,2.4rem);border:1px solid var(--border);border-top:3px solid var(--accent);
+  border-radius:1.55rem;background:var(--card2);box-shadow:var(--shadow);}
+.stApp:has(.welcome-splash) .st-key-onboarding_form{animation:setup-reveal .65s 1.94s ease-out both;}
+@keyframes setup-reveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.st-key-onboarding_form .setup-owl{display:flex;justify-content:center;align-items:center;width:7rem;height:5.5rem;margin:0 auto;
+  background:radial-gradient(ellipse,var(--accent-soft),transparent 74%);}
+.st-key-onboarding_form [data-testid="stHeading"] h1{margin:0;text-align:center;font-weight:800;
+  letter-spacing:-.045em;line-height:1.1;font-size:clamp(1.8rem,5vw,2.65rem);padding:.12rem 0;}
+.st-key-onboarding_form [data-testid="stCaptionContainer"]{text-align:center;margin-bottom:.35rem;}
+.st-key-onboarding_form [data-testid="stCaptionContainer"] p{color:var(--muted);}
+.st-key-onboarding_form [data-testid="stSelectbox"] [data-baseweb="select"] > div{min-height:3rem;}
+.st-key-onboarding_form .st-key-setup_summary{background:var(--accent-soft);padding:.95rem 1rem;border-radius:1rem;gap:.35rem;}
+.st-key-onboarding_form .st-key-setup_summary h3{font-size:1rem;padding:.1rem 0;}
+.st-key-onboarding_form .st-key-setup_summary p{margin:0;font-size:.9rem;}
+@media(max-width:600px){.stApp .st-key-onboarding_form{margin-top:.25rem;}}
+@media(prefers-reduced-motion:reduce){
+  .welcome-splash{display:none;}
+  .stApp:has(.welcome-splash) .st-key-onboarding_form{animation:none!important;}
+}
 .owl-line{font-size:.93rem;margin:0;}
 .bubble{position:relative;max-width:210px;text-align:center;padding:.5rem .9rem;margin-bottom:.6rem;border-radius:14px;background:var(--card2);border:1px solid var(--border);font-size:.8rem;color:var(--muted);box-shadow:0 1px 2px rgba(41,27,79,.05);animation:pop .7s .6s cubic-bezier(.34,1.56,.64,1) both;}
 .bubble::after{content:"";position:absolute;bottom:-5px;left:50%;margin-left:-5px;width:9px;height:9px;background:var(--card2);border-right:1px solid var(--border);border-bottom:1px solid var(--border);transform:rotate(45deg);}
@@ -302,8 +339,8 @@ def _min(s: str) -> str:
 
 
 @cache
-def _owl_image() -> str:
-    asset = Path(__file__).with_name("assets") / "amethyst-owl.webp"
+def _owl_image(filename: str = "amethyst-owl.webp") -> str:
+    asset = Path(__file__).with_name("assets") / filename
     return base64.b64encode(asset.read_bytes()).decode("ascii")
 
 
@@ -381,6 +418,14 @@ def mascot(size: int = 120) -> str:
     return (f'<span class="entendi-mascot" role="img" aria-label="Amethyst owl mascot" '
             f'style="width:{size}px;height:{round(size * 130 / 120)}px">'
             f'<i class="owl-shadow"></i><i class="owl-body"></i>{sparks}</span>')
+
+
+def welcome_intro() -> str:
+    image = _owl_image("amethyst-owl-wave.webp")
+    return (f'<div class="welcome-splash" aria-hidden="true"><div class="welcome-scene">'
+            f'<div class="welcome-owl"><img alt="" src="data:image/webp;base64,{image}">'
+            '<i class="wave-mark wave-mark-inner"></i><i class="wave-mark wave-mark-outer"></i></div>'
+            '<p>Welcome to <span>Entendi!</span></p></div></div>')
 
 
 def hero_html(headline: str = "Understand any official letter,", alternate: str = "in your language.",
