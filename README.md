@@ -8,7 +8,7 @@ Open [Entendi](https://entendi.streamlit.app/) and choose **Try a sample letter*
 
 ## Run locally
 
-Requires Python 3.10 or later.
+Requires Python 3.11 or later.
 
 ```sh
 python3 -m venv .venv
