@@ -4,6 +4,7 @@ from functools import cache
 import html
 from pathlib import Path
 import random
+from urllib.parse import quote
 
 FEATURE_ORDER = ("plan", "issue", "manual", "resources", "workflow")
 
@@ -44,7 +45,7 @@ def icon(key: str) -> str:
 # ---------------------------------------------------------------- colour tokens
 _DARK = ("--bg:#0C0B18;--text:#F5F3FC;--muted:#B2ABC5;--card:rgba(255,255,255,.055);--card2:rgba(255,255,255,.085);"
          "--border:rgba(203,190,255,.16);--fborder:rgba(203,190,255,.26);--field:rgba(255,255,255,.07);--pop:#1B172A;"
-         "--side:rgba(15,13,28,.84);--accent:#C3B2FF;--accent-soft:rgba(173,148,255,.18);--btn-text:#1C1437;"
+         "--side:#100F1D;--nav-active:#201C32;--nav-border:#443A5E;--accent:#C3B2FF;--accent-soft:rgba(173,148,255,.18);--btn-text:#1C1437;"
          "--hero-gradient:linear-gradient(100deg,#ECE5FF 0%,#BEACFF 23%,#F2BCEF 48%,#BEACFF 71%,#ECE5FF 100%);"
          "--button-gradient:linear-gradient(115deg,#B8ABFF,#E0B4F2);--progress-start:#9380EE;"
          "--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 12px 40px rgba(0,0,0,.45);--hover:rgba(255,255,255,.07);"
@@ -52,7 +53,7 @@ _DARK = ("--bg:#0C0B18;--text:#F5F3FC;--muted:#B2ABC5;--card:rgba(255,255,255,.0
          "--danger:#FF9A7A;--danger-soft:rgba(255,154,122,.14);--good:#C3B2FF;--good-soft:rgba(173,148,255,.16);"
          "--wx:linear-gradient(135deg,rgba(127,184,240,.16),rgba(173,148,255,.16));--head:linear-gradient(135deg,#FFFFFF0D,#B8ABFF17);")
 _LIGHT = ("--bg:#F6F3FC;--text:#211B36;--muted:#59526E;--card:#FFFFFF;--card2:#FFFFFF;--border:#E2DBF0;--fborder:#CDC3E2;"
-          "--field:#FFFFFF;--pop:#FFFFFF;--side:#FFFFFF;--accent:#5841B6;--accent-soft:rgba(88,65,182,.11);--btn-text:#FFFFFF;"
+          "--field:#FFFFFF;--pop:#FFFFFF;--side:#FCFAFF;--nav-active:#F0EAFB;--nav-border:#D9CDEE;--accent:#5841B6;--accent-soft:rgba(88,65,182,.11);--btn-text:#FFFFFF;"
           "--hero-gradient:linear-gradient(100deg,#332374 0%,#5841B6 23%,#864597 48%,#5841B6 71%,#332374 100%);"
           "--button-gradient:linear-gradient(115deg,#4935A8,#783E91);--progress-start:#9276DF;"
           "--shadow:0 1px 2px rgba(41,27,79,.05),0 10px 28px rgba(41,27,79,.07);--hover:rgba(88,65,182,.07);"
@@ -130,13 +131,25 @@ footer{visibility:hidden;}
 [data-testid="stSidebar"]>div:first-child{background:transparent!important;}
 .brand{display:flex;align-items:center;gap:.6rem;padding:.2rem 0 .8rem;animation:slideL .7s both;}
 .brand b{font-size:1.25rem;font-weight:700;letter-spacing:-.025em;}
-[data-testid="stSidebar"] [role="radiogroup"]{gap:.1rem;}
-[data-testid="stSidebar"] label[data-baseweb="radio"]{width:100%;margin:0;padding:.55rem .8rem;border-radius:12px;transition:background .2s,transform .25s;animation:slideL .5s both;}
-[data-testid="stSidebar"] label[data-baseweb="radio"]>div:first-child{display:none;}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:hover{background:var(--hover);transform:translateX(3px);}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked){background:var(--accent-soft);font-weight:700;}
-[data-testid="stSidebar"] label[data-baseweb="radio"]:has(input:checked) *{color:var(--accent);}
-.navlabel{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:.9rem 0 .2rem .3rem;}
+.st-key-page label:has(input[type="radio"]){box-sizing:border-box;display:flex;align-items:center;gap:.68rem;width:100%;
+  min-height:2.55rem;margin:0;padding:.42rem .68rem;border:1px solid transparent;border-radius:11px;cursor:pointer;
+  transition:background-color .18s,border-color .18s;}
+.st-key-page [role="radiogroup"],.st-key-page [role="radiogroup"]>div{row-gap:.12rem;}
+.st-key-page label[data-testid="stRadioOption"]>div>div:first-child:not([data-testid]),
+.st-key-page label[data-baseweb="radio"]:not([data-testid="stRadioOption"])>div:first-child{display:none;}
+.st-key-page label:has(input[type="radio"])::before{content:"";flex:0 0 1.15rem;width:1.15rem;height:1.15rem;
+  background:var(--muted);mask:var(--nav-icon) center/contain no-repeat;}
+.st-key-page label:has(input[type="radio"]) [data-testid="stMarkdownContainer"] p{margin:0;line-height:1.3;}
+.st-key-page label:has(input[type="radio"]):hover{background:var(--hover);}
+.st-key-page label:has(input:checked){background:var(--nav-active);border-color:var(--nav-border);}
+.st-key-page label:has(input:checked)::before{background:var(--accent);}
+.st-key-page label:has(input:checked) [data-testid="stMarkdownContainer"] p{font-weight:650;}
+.st-key-page label:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:-2px;}
+.navlabel{font-size:.7rem;font-weight:750;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:.2rem .68rem 0;}
+.stApp [data-testid="stTooltipHoverTarget"] button[aria-label^="Help for"]{display:grid;place-items:center;padding:0;
+  min-height:1.4rem;width:1.4rem;background:transparent;border:0;color:var(--muted);}
+.stApp [data-testid="stTooltipHoverTarget"] button[aria-label^="Help for"]:hover{color:var(--accent);}
+.stApp [data-testid="stTooltipHoverTarget"] button[aria-label^="Help for"] svg{color:inherit;stroke:currentColor;}
 /* ---------- hero + headers ---------- */
 .hero{position:relative;text-align:center;padding:1.2rem 0 1.4rem;display:flex;flex-direction:column;align-items:center;}
 .hero .mwrap{position:relative;margin-bottom:.8rem;}
@@ -279,8 +292,14 @@ footer{visibility:hidden;}
 .stApp button[data-testid^="stBaseButton"]:active{transform:scale(.97);}
 .stApp button:focus-visible,.stApp a:focus-visible,.stApp input:focus-visible{outline:3px solid var(--accent);outline-offset:2px;}
 .st-key-cta_dash,.st-key-cta_lab{display:flex;animation:riseIn .8s 1.2s both;}.st-key-cta_dash{justify-content:flex-end;}.st-key-cta_lab{justify-content:flex-start;animation-delay:1.3s;}
-[data-testid="stExpander"]{background:var(--card);border:1px solid var(--border)!important;border-radius:16px;}
-[data-testid="stExpander"] summary:hover{color:var(--accent);}
+[data-testid="stExpander"]{background:var(--card);border:1px solid var(--border)!important;border-radius:13px;}
+[data-testid="stExpander"] details{background:transparent!important;border:0!important;}
+[data-testid="stExpander"] summary{background:transparent!important;color:var(--muted)!important;border-radius:12px;}
+[data-testid="stExpander"] summary [data-testid="stMarkdownContainer"] p,
+[data-testid="stExpander"] summary [data-testid="stIconMaterial"]{color:inherit!important;}
+[data-testid="stExpander"] summary:hover,[data-testid="stExpander"] details[open]>summary{
+  background:var(--hover)!important;color:var(--text)!important;}
+[data-testid="stExpander"] summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;}
 [data-testid="stCode"] pre,[data-testid="stCode"] code{background:var(--accent-soft)!important;border-radius:12px;}
 [data-testid="stVerticalBlockBorderWrapper"]{border-color:var(--border)!important;border-radius:18px;background:var(--card);}
 [data-testid="stFileUploaderDropzone"],[data-testid="stAudioInput"],[data-testid="stCameraInput"]{background:var(--field)!important;border:1.5px dashed var(--fborder)!important;border-radius:16px!important;}
@@ -296,10 +315,15 @@ footer{visibility:hidden;}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;}}
 """
 
-# dark mode only: tint native alerts/tables to match (in light mode Streamlit's own alert colours already look right)
+# Style the native inner alert surface because it carries Streamlit's light-theme background.
 _DARK_ONLY = """
-[data-testid="stAlert"]{background:var(--card)!important;border:1px solid var(--border);border-radius:16px;}
-[data-testid="stAlert"] *{color:var(--text)!important;}
+[data-testid="stAlertContainer"]{--alert-text:var(--sky);--alert-bg:var(--sky-soft);background:var(--alert-bg)!important;
+  border:1px solid var(--border);border-radius:12px;color:var(--alert-text)!important;}
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentSuccess"]){--alert-text:var(--good);--alert-bg:var(--good-soft);}
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]){--alert-text:var(--warm);--alert-bg:var(--warm-soft);}
+[data-testid="stAlertContainer"]:has([data-testid="stAlertContentError"]){--alert-text:var(--danger);--alert-bg:var(--danger-soft);}
+[data-testid="stAlertContainer"] [data-testid="stMarkdownContainer"] *{color:var(--text)!important;}
+[data-testid="stAlertContainer"] [data-testid="stIconMaterial"]{color:var(--alert-text)!important;}
 [data-testid="stDataFrame"],[data-testid="stDataEditor"]{filter:invert(.9) hue-rotate(180deg);border-radius:12px;}
 """
 _LIGHT_ONLY = """
@@ -324,12 +348,22 @@ def _owl_image() -> str:
     return base64.b64encode(asset.read_bytes()).decode("ascii")
 
 
-def global_css(dark: bool = False, large_text: bool = False, low_data: bool = False) -> str:
+@cache
+def _navigation_css(pages: tuple[str, ...]) -> str:
+    rules = []
+    for index, page in enumerate(pages):
+        svg = icon(page).replace('class="ico"', 'xmlns="http://www.w3.org/2000/svg"')
+        rules.append(f'.st-key-page label:has(input[value="{index}"])'
+                     f'{{--nav-icon:url("data:image/svg+xml,{quote(svg, safe="")}")}}')
+    return "".join(rules)
+
+
+def global_css(dark: bool = False, large_text: bool = False, low_data: bool = False,
+               *, navigation: tuple[str, ...] = ()) -> str:
     extra = [f'[class*="st-key-sec_{i}"]{{animation-delay:{i * .12:.2f}s;}}' for i in range(5)]
     for i, k in enumerate(FEATURE_ORDER):
         extra.append(f'[class*="fcard_{k}"],[class*="fcard_h_{k}"]{{animation-delay:{.25 + i * .12:.2f}s;}}')
-    extra += [f'[data-testid="stSidebar"] label[data-baseweb="radio"]:nth-child({i}){{animation-delay:{i * .03:.2f}s}}'
-              for i in range(1, 20)]
+    extra.append(_navigation_css(navigation))
     extra.append(_DARK_ONLY if dark else _LIGHT_ONLY)
     if large_text:
         extra.append(_LARGE)

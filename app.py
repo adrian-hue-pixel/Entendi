@@ -10,8 +10,13 @@ st.set_page_config(page_title="Entendi", page_icon="✦", layout="wide")
 
 state = st.session_state
 state.setdefault("workspace", views.new_workspace())
-st.markdown(ui.global_css(state.get("dark_mode", False), state.get("large_text", False), state.get("low_data", False))
-            + ui.background_fx(state.get("dark_mode", False), low_data=state.get("low_data", False)), unsafe_allow_html=True)
+dark = state.get("dark_mode", False)
+low_data = state.get("low_data", False)
+st.markdown(
+    ui.global_css(dark, state.get("large_text", False), low_data, navigation=tuple(views.PAGES))
+    + ui.background_fx(dark, low_data=low_data),
+    unsafe_allow_html=True,
+)
 
 
 def import_workspace() -> None:
@@ -28,8 +33,10 @@ def import_workspace() -> None:
 
 with st.sidebar:
     st.markdown(ui.sidebar_brand(), unsafe_allow_html=True)
+    st.markdown(ui.nav_label("Workspace"), unsafe_allow_html=True)
     st.radio("Menu", list(views.PAGES), key="page",
              format_func=lambda page: views.PAGES[page][0], label_visibility="collapsed")
+    st.markdown(ui.nav_label("Preferences"), unsafe_allow_html=True)
     with st.expander("My workspace file"):
         st.file_uploader("Load saved workspace", type=["json"], key="workspace_upload", on_change=import_workspace)
         message = state.pop("import_message", None)
