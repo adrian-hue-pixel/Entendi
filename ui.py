@@ -88,11 +88,18 @@ footer{visibility:hidden;}
 /* ---------- ambient background ---------- */
 .bg-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;contain:strict;}
 .day-sky{background:linear-gradient(160deg,#fafbf7 0%,#f6f8f3 55%,#edf4ed 100%);}
-.day-sky::before{content:"";position:absolute;inset:-8%;
-  background:radial-gradient(ellipse at 100% 0%,rgba(255,232,190,.36),transparent 42%),
-    radial-gradient(ellipse at 12% 100%,rgba(170,209,188,.22),transparent 48%);
-  opacity:.7;animation:day-drift 36s ease-in-out infinite alternate;}
-@keyframes day-drift{from{transform:translate(-1%,-1%);opacity:.55}to{transform:translate(1%,1%);opacity:.85}}
+.day-sky::before{content:"";position:absolute;inset:-20%;
+  background:radial-gradient(ellipse at 83% 24%,rgba(246,208,137,.38),transparent 33%),
+    radial-gradient(ellipse at 18% 73%,rgba(108,184,146,.32),transparent 36%);
+  opacity:.85;animation:day-drift 11s ease-in-out -3s infinite alternate;}
+@keyframes day-drift{from{transform:translate(-8%,5%);opacity:.76}to{transform:translate(8%,-5%);opacity:1}}
+.day-mote{position:absolute;left:var(--left);top:var(--top);width:var(--size);height:var(--size);border-radius:50%;
+  background:radial-gradient(circle,var(--tint) 12%,transparent 72%);opacity:.58;
+  animation:day-mote-rise var(--period) ease-in-out var(--phase) infinite alternate;}
+@keyframes day-mote-rise{
+  from{transform:translate(0,14px) scale(.82);opacity:.3}
+  to{transform:translate(var(--drift),-42px) scale(1.12);opacity:.8}
+}
 .night-sky{background:
   radial-gradient(ellipse at 82% 24%,rgba(54,78,130,.23),transparent 42%),
   linear-gradient(151deg,transparent 22%,rgba(55,69,112,.16) 48%,transparent 69%),
@@ -110,7 +117,7 @@ footer{visibility:hidden;}
   .6%{opacity:1}
   3.6%,100%{opacity:0;transform:rotate(var(--angle)) translateX(min(52vw,650px))}
 }
-@media (prefers-reduced-motion:reduce){.day-sky::before,.sky-star,.sky-meteor{animation:none!important;}}
+@media (prefers-reduced-motion:reduce){.day-sky::before,.day-mote,.sky-star,.sky-meteor{animation:none!important;}}
 /* ---------- sidebar ---------- */
 [data-testid="stSidebar"]{background:var(--side)!important;backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-right:1px solid var(--border);}
 [data-testid="stSidebar"]>div:first-child{background:transparent!important;}
@@ -319,12 +326,27 @@ def global_css(dark: bool = False, large_text: bool = False, low_data: bool = Fa
     return f"<style>{_min(font + root + _CSS + ''.join(extra))}</style>"
 
 
+def _day_background() -> str:
+    motes = (
+        (8, 21, 16, 8, 2, 22), (16, 36, 10, 9, 5, -18), (7, 58, 22, 11, 6, 26),
+        (22, 68, 13, 7, 3, -21), (13, 87, 24, 10, 8, 31), (28, 18, 12, 8, 6, 20),
+        (86, 24, 20, 10, 5, -25), (95, 42, 14, 7, 2, -23), (81, 51, 10, 9, 7, 19),
+        (90, 66, 22, 11, 3, -32), (78, 82, 15, 8, 5, 24), (94, 91, 16, 10, 7, -26),
+    )
+    parts = ['<div class="bg-fx day-sky" aria-hidden="true">']
+    for left, top, size, period, phase, drift in motes:
+        tint = "rgba(42,135,93,.45)" if left < 50 else "rgba(204,149,46,.52)"
+        parts.append(f'<i class="day-mote" style="--left:{left}%;--top:{top}%;--size:{size}px;'
+                     f'--period:{period}s;--phase:-{phase}s;--drift:{drift}px;--tint:{tint}"></i>')
+    return "".join(parts) + "</div>"
+
+
 def background_fx(dark: bool = False, seed: int = 7, low_data: bool = False) -> str:
-    """Render a decorative background with deterministic star positions."""
+    """Render the decorative background for the current appearance."""
     if low_data:
         return ""
     if not dark:
-        return '<div class="bg-fx day-sky" aria-hidden="true"></div>'
+        return _day_background()
 
     rnd = random.Random(seed)
     parts = ['<div class="bg-fx night-sky" aria-hidden="true">']
