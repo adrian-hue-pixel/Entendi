@@ -87,12 +87,12 @@ footer{visibility:hidden;}
 @keyframes fillbar{from{width:0}}
 /* ---------- ambient background ---------- */
 .bg-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;contain:strict;}
-.day-glow{position:absolute;width:80vmax;height:72vmax;animation:day-drift 32s ease-in-out infinite alternate;}
-.day-glow.warm{top:-32vmax;right:-23vmax;background:radial-gradient(ellipse,rgba(255,218,144,.36),transparent 67%);}
-.day-glow.cool{bottom:-33vmax;left:-19vmax;background:radial-gradient(ellipse,rgba(105,177,141,.22),transparent 67%);
-  animation-duration:41s;animation-delay:-17s;}
-@keyframes day-drift{from{transform:translate(1vmax,-1vmax);opacity:.7}to{transform:translate(-5vmax,3vmax);opacity:1}}
-.bg-pattern{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M20 54l25-25 25 25-25 25z' fill='%2317734A'/%3E%3Cpath d='M82 98l13-13 13 13-13 13z' fill='%2317734A'/%3E%3C/svg%3E");}
+.day-sky{background:linear-gradient(160deg,#fafbf7 0%,#f6f8f3 55%,#edf4ed 100%);}
+.day-sky::before{content:"";position:absolute;inset:-8%;
+  background:radial-gradient(ellipse at 100% 0%,rgba(255,232,190,.36),transparent 42%),
+    radial-gradient(ellipse at 12% 100%,rgba(170,209,188,.22),transparent 48%);
+  opacity:.7;animation:day-drift 36s ease-in-out infinite alternate;}
+@keyframes day-drift{from{transform:translate(-1%,-1%);opacity:.55}to{transform:translate(1%,1%);opacity:.85}}
 .night-sky{background:
   radial-gradient(ellipse at 82% 24%,rgba(54,78,130,.23),transparent 42%),
   linear-gradient(151deg,transparent 22%,rgba(55,69,112,.16) 48%,transparent 69%),
@@ -110,7 +110,7 @@ footer{visibility:hidden;}
   .6%{opacity:1}
   3.6%,100%{opacity:0;transform:rotate(var(--angle)) translateX(min(52vw,650px))}
 }
-@media (prefers-reduced-motion:reduce){.day-glow,.sky-star,.sky-meteor{animation:none!important;}}
+@media (prefers-reduced-motion:reduce){.day-sky::before,.sky-star,.sky-meteor{animation:none!important;}}
 /* ---------- sidebar ---------- */
 [data-testid="stSidebar"]{background:var(--side)!important;backdrop-filter:saturate(180%) blur(28px);-webkit-backdrop-filter:saturate(180%) blur(28px);border-right:1px solid var(--border);}
 [data-testid="stSidebar"]>div:first-child{background:transparent!important;}
@@ -324,8 +324,7 @@ def background_fx(dark: bool = False, seed: int = 7, low_data: bool = False) -> 
     if low_data:
         return ""
     if not dark:
-        return ('<div class="bg-fx" aria-hidden="true"><i class="day-glow warm"></i>'
-                '<i class="day-glow cool"></i><div class="bg-pattern"></div></div>')
+        return '<div class="bg-fx day-sky" aria-hidden="true"></div>'
 
     rnd = random.Random(seed)
     parts = ['<div class="bg-fx night-sky" aria-hidden="true">']
